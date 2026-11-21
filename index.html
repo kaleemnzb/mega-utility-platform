@@ -776,15 +776,17 @@
         $(".cat-pill").removeClass("active");
       });
 
-      // Launch Tool Action
+// Launch Tool Action
       $(document).on("click", ".tool-launch-btn", function () {
         const action = $(this).data("action");
         const toolName = $(this).data("name");
 
         if (action === "passport") {
           window.location.href = "passport-photo-studio.html";
+        } else if (toolName === "Photo & Signature Resizer") {
+          window.location.href = "photo-signature-resizer.html";
         } else {
-          alert(toolName + " — Ready to build next in our modular HTML/jQuery structure!");
+          alert(toolName + " - Ready to build next in our modular HTML/jQuery structure!");
         }
       });
 
