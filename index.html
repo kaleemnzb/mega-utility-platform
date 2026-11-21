@@ -782,8 +782,7 @@
         const toolName = $(this).data("name");
 
         if (action === "passport") {
-          $("#passportModal").fadeIn(180);
-          drawPassportSheet();
+          window.location.href = "passport-photo-studio.html";
         } else {
           alert(toolName + " — Ready to build next in our modular HTML/jQuery structure!");
         }

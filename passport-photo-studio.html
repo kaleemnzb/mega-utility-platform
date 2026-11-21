@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Passport Photo Studio — Crop &amp; Print 4×6 Sheets</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--gn:#86EB22;--bk:#0A0A0A;--ch:#282728;
+  --g4:#9E9E9E;--surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--shm:0 4px 16px rgba(0,0,0,.13);
+  --ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--g);outline-offset:2px;border-radius:4px}
+/* Header */
+header{background:var(--surf);border-bottom:1px solid var(--brd);padding:0 clamp(16px,4vw,48px);
+  height:54px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh);
+  position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+/* Hero */
+.hero{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:clamp(16px,3vw,28px) clamp(16px,4vw,48px)}
+.ey{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--g);margin-bottom:4px}
+.hero h1{font-size:clamp(1.2rem,3vw,1.9rem);font-weight:800;line-height:1.12}
+.hero p{margin-top:5px;font-size:.81rem;color:var(--txt2);max-width:460px;line-height:1.6}
+/* Step bar */
+.sbar{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:10px clamp(16px,4vw,48px)}
+.steps{display:flex;align-items:center;max-width:500px}
+.si{display:flex;align-items:center;gap:5px}
+.snum{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0;
+  border:2px solid var(--brd);background:var(--surf);color:var(--g4);transition:all .22s}
+.si.done .snum{background:var(--g);border-color:var(--g);color:var(--bk)}
+.si.act  .snum{background:var(--txt);border-color:var(--txt);color:var(--surf)}
+.slb{font-size:.64rem;font-weight:700;color:var(--g4);white-space:nowrap;transition:color .22s}
+.si.done .slb,.si.act .slb{color:var(--txt)}
+.sln{flex:1;height:2px;background:var(--brd);margin:0 5px;min-width:8px;transition:background .22s}
+.sln.done{background:var(--g)}
+@media(max-width:420px){.slb{display:none}}
+/* Wrap / panels */
+.wrap{max-width:1000px;margin:0 auto;
+  padding:clamp(12px,2.5vw,22px) clamp(16px,4vw,40px)}
+.panel{display:none}
+.panel.on{display:block;animation:rise .3s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.panel.on{animation:none}}
+/* Card */
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:7px}
+.cico{width:23px;height:23px;border-radius:5px;background:var(--surf2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chd h2{font-size:.71rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.7rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:7px 11px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:12px}
+/* Buttons */
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 20px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;display:inline-flex;
+  align-items:center;gap:6px;min-height:44px;
+  transition:background .14s,box-shadow .13s,transform .1s}
+.bp:hover{background:var(--gd);box-shadow:0 4px 12px rgba(134,188,37,.25)}
+.bp:active{transform:scale(.98)}
+.bp:disabled{opacity:.38;cursor:not-allowed;pointer-events:none}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 15px;font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;transition:all .13s}
+.bs:hover{background:var(--surf2);color:var(--txt)}
+.ib{background:var(--surf2);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  width:42px;height:42px;min-width:42px;cursor:pointer;display:inline-flex;
+  align-items:center;justify-content:center;flex-shrink:0;transition:all .13s;font-family:var(--ff)}
+.ib:hover{background:var(--brd);color:var(--txt)}
+.ib.on{background:var(--g);color:var(--bk);border-color:var(--g)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.sep{height:1px;background:var(--brd);margin:12px 0}
+.slb2{font-size:.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--txt2);margin-bottom:8px;display:block}
+/* Step 1 */
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:clamp(24px,5vw,40px) 20px;
+  text-align:center;cursor:pointer;transition:border-color .17s,background .17s}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.04)}
+.dzico{width:46px;height:46px;border-radius:50%;background:var(--surf2);
+  margin:0 auto 10px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.dzt{font-size:.9rem;font-weight:700;color:var(--txt);margin-bottom:3px;pointer-events:none}
+.dzs{font-size:.74rem;color:var(--txt2);pointer-events:none}
+.dzty{display:inline-block;margin-top:7px;font-size:.65rem;background:var(--surf2);
+  border:1px solid var(--brd);border-radius:20px;padding:3px 10px;color:var(--txt2);pointer-events:none}
+#fi{display:none}
+#upw{display:none;margin-top:15px;text-align:center}
+#uimg{max-height:190px;max-width:100%;border-radius:7px;border:1px solid var(--brd);
+  margin:0 auto;display:block;object-fit:contain}
+#uinfo{font-size:.71rem;color:var(--txt2);margin-top:5px}
+/* Step 2 */
+.egrid{display:grid;grid-template-columns:1fr 270px;gap:13px;align-items:start}
+@media(max-width:720px){.egrid{grid-template-columns:1fr}}
+.cout{position:relative;background:#111;border-radius:8px;overflow:hidden;
+  min-height:260px;display:flex;align-items:center;justify-content:center}
+#ec{display:block;position:relative;z-index:1;max-width:100%;max-height:460px}
+#cov{position:absolute;inset:0;z-index:2;pointer-events:none}
+#cb{position:absolute;border:2px solid rgba(255,255,255,.88);
+  box-shadow:0 0 0 9999px rgba(0,0,0,.52);pointer-events:all;cursor:move;touch-action:none}
+#cb::before,#cb::after{content:'';position:absolute;background:rgba(255,255,255,.22);pointer-events:none}
+#cb::before{top:33.33%;left:0;right:0;height:1px}
+#cb::after{top:0;bottom:0;left:33.33%;width:1px}
+.rth2{position:absolute;inset:0;pointer-events:none}
+.rth2::before,.rth2::after{content:'';position:absolute;background:rgba(255,255,255,.22)}
+.rth2::before{top:66.66%;left:0;right:0;height:1px}
+.rth2::after{top:0;bottom:0;left:66.66%;width:1px}
+.ch{position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;
+  border:2px solid var(--g);pointer-events:all;touch-action:none;z-index:3}
+.ch.tl{top:-7px;left:-7px;cursor:nwse-resize}
+.ch.tr{top:-7px;right:-7px;cursor:nesw-resize}
+.ch.bl{bottom:-7px;left:-7px;cursor:nesw-resize}
+.ch.br{bottom:-7px;right:-7px;cursor:nwse-resize}
+.csec{margin-bottom:13px}
+.clbl{font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--g);margin-bottom:7px;display:block;padding-bottom:4px;border-bottom:1px solid var(--brd)}
+.crow{display:flex;gap:7px;flex-wrap:wrap}
+.rr{margin-bottom:8px}
+.rr label{display:flex;justify-content:space-between;font-size:.72rem;font-weight:600;
+  color:var(--txt2);margin-bottom:3px}
+.rr label span{font-size:.72rem;font-weight:700;color:var(--g);min-width:34px;text-align:right}
+input[type=range]{width:100%;height:5px;border-radius:3px;-webkit-appearance:none;
+  appearance:none;background:var(--brd);cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+  border-radius:50%;background:var(--g);border:2px solid var(--surf);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;
+  background:var(--g);border:none;cursor:pointer}
+.sz-btn{background:var(--surf2);color:var(--txt2);border:2px solid var(--brd);
+  border-radius:7px;padding:6px 10px;font-family:var(--ff);font-size:.68rem;
+  font-weight:700;cursor:pointer;text-align:center;line-height:1.35;
+  min-width:72px;transition:all .13s;min-height:44px}
+.sz-btn:hover{border-color:var(--g);color:var(--txt)}
+.sz-btn.on{border-color:var(--g);background:rgba(134,188,37,.08);color:var(--txt)}
+.sz-btn small{display:block;font-weight:400;font-size:.62rem;color:var(--txt2);margin-top:1px}
+.sz-btn.on small{color:var(--g)}
+/* Step 3 */
+.lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  gap:9px;margin-bottom:12px}
+.lc{border:2px solid var(--brd);border-radius:var(--r);padding:10px;cursor:pointer;
+  background:var(--surf);transition:border-color .13s,box-shadow .13s;position:relative}
+.lc:hover{border-color:var(--g)}
+.lc.sel{border-color:var(--g);box-shadow:0 0 0 3px rgba(134,188,37,.17)}
+.lc.sel::after{content:'\2713';position:absolute;top:6px;right:8px;
+  font-size:.68rem;font-weight:800;color:var(--g)}
+.cnt-badge{position:absolute;top:6px;left:8px;background:rgba(0,0,0,.62);
+  color:#fff;font-size:.6rem;font-weight:700;padding:2px 7px;
+  border-radius:10px;letter-spacing:.03em;pointer-events:none;z-index:2}
+.lthumb{border-radius:4px;overflow:hidden;background:#f0f0f0;
+  margin-bottom:7px;display:block;position:relative}
+.lthumb canvas{width:100%;height:auto;display:block}
+.lname{font-size:.76rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.ldesc{font-size:.66rem;color:var(--txt2)}
+.pw{text-align:center;margin-bottom:12px}
+.pw canvas{max-width:min(560px,100%);width:100%;height:auto;border-radius:7px;
+  border:1px solid var(--brd);box-shadow:var(--shm);display:inline-block}
+.pnote{font-size:.69rem;color:var(--txt2);margin-top:6px}
+/* Step 4 */
+.frow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px}
+.fb{border:2px solid var(--brd);border-radius:8px;padding:9px 18px;background:var(--surf);
+  cursor:pointer;font-family:var(--ff);font-size:.8rem;font-weight:700;color:var(--txt2);
+  min-height:44px;transition:all .13s}
+.fb:hover{border-color:var(--g);color:var(--txt)}
+.fb.sel{border-color:var(--g);color:var(--g);background:rgba(134,188,37,.05)}
+.btn-print{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);
+  border-radius:8px;padding:10px 18px;font-family:var(--ff);font-size:.82rem;
+  font-weight:700;cursor:pointer;display:inline-flex;align-items:center;
+  gap:6px;min-height:44px;transition:all .13s}
+.btn-print:hover{background:var(--surf2);color:var(--txt);border-color:var(--g)}
+/* Toast */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;
+  pointer-events:none;max-width:290px;text-align:center;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Print styles */
+@media print{
+  header,.sbar,.hero,.brow,footer,.toast{display:none!important}
+  .wrap{padding:0;max-width:100%}
+  .card{border:none;box-shadow:none}
+  .panel{display:none!important}
+  #print-target{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Personal <em>| Passport Photo Studio</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+<div class="hero">
+  <div class="ey">Photo Print Tool</div>
+  <h1>Passport Photo Studio</h1>
+  <p>Upload, crop, edit and arrange passport photos for print. Everything runs locally — no photo ever leaves your device.</p>
+</div>
+<div class="sbar">
+  <div class="steps">
+    <div class="si act" id="si1"><div class="snum">1</div><span class="slb">Upload</span></div>
+    <div class="sln" id="sl1"></div>
+    <div class="si" id="si2"><div class="snum">2</div><span class="slb">Edit</span></div>
+    <div class="sln" id="sl2"></div>
+    <div class="si" id="si3"><div class="snum">3</div><span class="slb">Layout</span></div>
+    <div class="sln" id="sl3"></div>
+    <div class="si" id="si4"><div class="snum">4</div><span class="slb">Download</span></div>
+  </div>
+</div>
+
+<!-- Hidden print target -->
+<div id="print-target" style="display:none;text-align:center;padding:16px">
+  <canvas id="print-canvas" style="max-width:100%;height:auto"></canvas>
+</div>
+
+<div class="wrap">
+
+<!-- STEP 1 -->
+<div class="panel on" id="p1">
+  <div class="card">
+    <div class="chd">
+      <div class="cico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 4l3-3 3 3" stroke="var(--g)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="var(--g)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <h2>Upload Your Photo</h2>
+    </div>
+    <div class="cbody">
+      <p class="note">Use a clear front-facing photo on a plain background. JPG, PNG or WEBP. Minimum 400×400 px recommended.</p>
+      <input type="file" id="fi" accept="image/jpeg,image/png,image/webp"/>
+      <div class="dz" id="dz" role="button" tabindex="0" aria-label="Drop photo here or click Browse">
+        <div class="dzico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--g)" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.5" fill="var(--g)"/><path d="M3 16l5-5 4 4 3-3 6 6" stroke="var(--g)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="dzt">Drag &amp; drop your photo here</div>
+        <div class="dzs">or use the Browse button below</div>
+        <span class="dzty">JPG · PNG · WEBP</span>
+      </div>
+      <div style="text-align:center;margin-top:10px">
+        <button class="bp" id="browsebtn" type="button">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 4l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Browse Photo
+        </button>
+      </div>
+      <div id="upw">
+        <img id="uimg" src="" alt="Uploaded photo preview"/>
+        <div id="uinfo"></div>
+        <div style="text-align:center;margin-top:8px">
+          <button class="bs" id="changebtn" type="button" style="font-size:.74rem;padding:6px 12px;min-height:36px">Change Photo</button>
+        </div>
+      </div>
+      <div class="brow" style="justify-content:flex-end">
+        <button class="bp" id="btn12" type="button" disabled>Next: Edit
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="panel" id="p2">
+  <div class="card">
+    <div class="chd">
+      <div class="cico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3L5 14H2v-3L11 2z" stroke="var(--g)" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+      <h2>Crop &amp; Edit</h2>
+    </div>
+    <div class="cbody">
+      <p class="note">Select your photo size preset first, then drag the white box to crop. Use the right panel to rotate, flip and adjust.</p>
+      <div class="egrid">
+        <div class="cout" id="cout">
+          <canvas id="ec"></canvas>
+          <div id="cov">
+            <div id="cb">
+              <div class="ch tl" data-h="tl"></div>
+              <div class="ch tr" data-h="tr"></div>
+              <div class="ch bl" data-h="bl"></div>
+              <div class="ch br" data-h="br"></div>
+              <div class="rth2"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="csec">
+            <span class="clbl">Photo Size</span>
+            <div class="crow" id="size-presets">
+              <button class="sz-btn on" type="button" data-w="35" data-h="45">UK / EU / India<small>35×45 mm</small></button>
+              <button class="sz-btn" type="button" data-w="51" data-h="51">US Passport<small>2×2 inch</small></button>
+              <button class="sz-btn" type="button" data-w="35" data-h="35">Square<small>35×35 mm</small></button>
+            </div>
+          </div>
+          <div class="csec">
+            <span class="clbl">Rotate</span>
+            <div class="crow">
+              <button class="ib" id="rotl" type="button" aria-label="Rotate left 90" title="Rotate left 90">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 118 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 8v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="ib" id="rotr" type="button" aria-label="Rotate right 90" title="Rotate right 90">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 11-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 8v4h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="rr" style="margin-top:9px">
+              <label for="rfine">Fine angle <span id="vfine">0</span></label>
+              <input type="range" id="rfine" min="-45" max="45" step="0.5" value="0"/>
+            </div>
+          </div>
+          <div class="csec">
+            <span class="clbl">Flip</span>
+            <div class="crow">
+              <button class="ib" id="fliph" type="button" aria-pressed="false" title="Flip horizontal">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M6 7l-4 5 4 5M18 7l4 5-4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="ib" id="flipv" type="button" aria-pressed="false" title="Flip vertical">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M7 6l5-4 5 4M7 18l5 4 5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="csec">
+            <span class="clbl">Adjustments</span>
+            <div class="rr"><label for="rbr">Brightness <span id="vbr">100</span></label><input type="range" id="rbr" min="0" max="200" step="1" value="100"/></div>
+            <div class="rr"><label for="rco">Contrast <span id="vco">100</span></label><input type="range" id="rco" min="0" max="200" step="1" value="100"/></div>
+            <div class="rr"><label for="rsa">Saturation <span id="vsa">100</span></label><input type="range" id="rsa" min="0" max="200" step="1" value="100"/></div>
+          </div>
+          <button class="bs" id="btnreset" type="button" style="width:100%;justify-content:center">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 106-6H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 5V2H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Reset Edits
+          </button>
+        </div>
+      </div>
+      <div class="brow">
+        <button class="bs" id="btn21" type="button"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
+        <button class="bp" id="btn23" type="button" style="margin-left:auto">Next: Layout<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="panel" id="p3">
+  <div class="card">
+    <div class="chd">
+      <div class="cico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="var(--g)" stroke-width="1.5"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="var(--g)" stroke-width="1.5"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="var(--g)" stroke-width="1.5"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="var(--g)" stroke-width="1.5"/></svg></div>
+      <h2>Choose Print Layout</h2>
+    </div>
+    <div class="cbody">
+      <p class="note">Horizontal 6x4 inch print (1800x1200 px at 300 DPI). ~4mm gap between photos for easy cutting.</p>
+      <span class="slb2">Layout Options</span>
+      <div class="lgrid" id="lgrid" role="radiogroup" aria-label="Print layout options"></div>
+      <div class="sep"></div>
+      <span class="slb2">Layout Preview</span>
+      <div class="pw">
+        <canvas id="pvc" aria-label="Layout preview"></canvas>
+        <div class="pnote" id="pvnote">Select a layout above to preview</div>
+      </div>
+      <div class="brow">
+        <button class="bs" id="btn32" type="button"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
+        <button class="bp" id="btn34" type="button" style="margin-left:auto">Next: Download<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="panel" id="p4">
+  <div class="card">
+    <div class="chd">
+      <div class="cico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="var(--g)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="var(--g)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <h2>Download &amp; Print</h2>
+    </div>
+    <div class="cbody">
+      <span class="slb2">Final Preview</span>
+      <div class="pw">
+        <canvas id="fvc" aria-label="Final preview"></canvas>
+        <div class="pnote" id="fvnote"></div>
+      </div>
+      <div class="sep"></div>
+      <span class="slb2">Output Format</span>
+      <div class="frow">
+        <button class="fb sel" type="button" data-fmt="jpeg" aria-pressed="true">JPEG — smaller file</button>
+        <button class="fb" type="button" data-fmt="png" aria-pressed="false">PNG — lossless</button>
+      </div>
+      <div class="brow">
+        <button class="bs" id="btn43" type="button"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
+        <button class="btn-print" id="btnprint" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="6" y="14" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="11.5" r="1" fill="currentColor"/></svg>
+          Print
+        </button>
+        <button class="bp" id="btndl" type="button">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Download
+        </button>
+        <button class="bs" id="btnrestart" type="button">Start Over</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /wrap -->
+<div class="toast" id="tst" role="status" aria-live="polite"></div>
+<footer style="text-align:center;padding:14px;font-size:.67rem;color:var(--txt2);border-top:1px solid var(--brd);margin-top:4px">
+  Passport Photo Studio &nbsp;&middot;&nbsp; No photos leave your device
+</footer>
+
+<script>
+$(function(){
+  $(document).on("contextmenu",function(e){e.preventDefault();return false;});
+  $(document).on("keydown",function(e){
+    if(e.keyCode===123)return false;
+    if(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67))return false;
+    if(e.ctrlKey&&(e.keyCode===85||e.keyCode===83))return false;
+  });
+});
+
+(function(){
+'use strict';
+
+var $=function(id){return document.getElementById(id);};
+var clamp=function(v,lo,hi){return Math.min(hi,Math.max(lo,v));};
+var _tt;
+function toast(msg,ms){
+  clearTimeout(_tt);
+  var t=$('tst');t.textContent=msg;t.classList.add('show');
+  _tt=setTimeout(function(){t.classList.remove('show');},ms||2600);
+}
+
+var S={
+  srcImg:null,fileName:'passport-photo',
+  rot90:0,fine:0,flipH:false,flipV:false,
+  bright:100,cont:100,sat:100,
+  crop:{x:0,y:0,w:0,h:0},
+  photoW:35,photoH:45,
+  layout:'4x2',
+  fmt:'jpeg'
+};
+
+function getPR(){return S.photoW/S.photoH;}
+var PW=1800,PH=1200;
+var CMARGIN=50,CGAP=50;
+
+var LAYOUTS=[
+  {id:'4x2', name:'4 x 2 Grid',        desc:'8 copies \u2014 4 cols x 2 rows', cols:4,rows:2,guides:false},
+  {id:'2x2', name:'2 x 2 Grid',        desc:'4 copies \u2014 2 cols x 2 rows', cols:2,rows:2,guides:false},
+  {id:'4x2s',name:'Strip + Cut Lines', desc:'8 copies with cut guide lines',   cols:4,rows:2,guides:true},
+  {id:'3x2', name:'3 x 2 Grid',        desc:'6 copies \u2014 3 cols x 2 rows', cols:3,rows:2,guides:false}
+];
+
+function setStep(n){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
+  $('p'+n).classList.add('on');
+  for(var i=1;i<=4;i++){
+    var si=$('si'+i);si.classList.remove('act','done');
+    if(i===n)si.classList.add('act');else if(i<n)si.classList.add('done');
+    var sl=$('sl'+i);if(sl)sl.classList.toggle('done',i<n);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===2)setTimeout(initEditor,50);
+  if(n===3)buildLayoutStep();
+  if(n===4)buildDownloadStep();
+}
+
+/* STEP 1: UPLOAD */
+var fi=$('fi'),dz=$('dz');
+$('browsebtn').addEventListener('click',function(){fi.click();});
+$('changebtn').addEventListener('click',function(){fi.value='';fi.click();});
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('keydown',function(e){
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();fi.click();}
+});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('over');});
+dz.addEventListener('drop',function(e){
+  e.preventDefault();dz.classList.remove('over');
+  if(e.dataTransfer&&e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);
+});
+fi.addEventListener('change',function(){if(fi.files&&fi.files[0])loadFile(fi.files[0]);});
+
+function loadFile(file){
+  if(['image/jpeg','image/png','image/webp'].indexOf(file.type)<0){
+    toast('Please choose a JPG, PNG or WEBP file.');return;
+  }
+  var reader=new FileReader();
+  reader.onerror=function(){toast('File read error \u2014 please try again.');};
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onerror=function(){toast('Could not decode image \u2014 try another file.');};
+    img.onload=function(){
+      S.srcImg=img;
+      S.fileName=file.name.replace(/\.[^.]+$/,'')||'passport-photo';
+      var u=$('uimg');u.src=ev.target.result;u.alt='Preview of '+file.name;
+      $('uinfo').textContent=file.name+' \u00b7 '+img.width+'x'+img.height+' px \u00b7 '+Math.round(file.size/1024)+' KB';
+      $('upw').style.display='block';
+      $('btn12').disabled=false;
+      toast('Photo loaded \u2014 click Next: Edit to continue');
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+$('btn12').addEventListener('click',function(){setStep(2);});
+
+/* STEP 2: EDITOR */
+var ec=$('ec'),ectx=ec.getContext('2d');
+var cb=$('cb'),cout=$('cout');
+var dispScale=1;
+
+function totalAngle(){return S.rot90*90+S.fine;}
+
+function drawCanvas(){
+  if(!S.srcImg)return;
+  var img=S.srcImg;
+  var rad=totalAngle()*Math.PI/180;
+  var cos=Math.abs(Math.cos(rad)),sin=Math.abs(Math.sin(rad));
+  var CW=Math.round(img.width*cos+img.height*sin);
+  var CH=Math.round(img.width*sin+img.height*cos);
+  ec.width=CW;ec.height=CH;
+  var maxPx=490;
+  dispScale=Math.min(maxPx/CW,maxPx/CH,1);
+  ec.style.width=Math.round(CW*dispScale)+'px';
+  ec.style.height=Math.round(CH*dispScale)+'px';
+  ectx.save();
+  ectx.clearRect(0,0,CW,CH);
+  ectx.filter='brightness('+S.bright+'%) contrast('+S.cont+'%) saturate('+S.sat+'%)';
+  ectx.translate(CW/2,CH/2);
+  ectx.rotate(rad);
+  ectx.scale(S.flipH?-1:1,S.flipV?-1:1);
+  ectx.drawImage(img,-img.width/2,-img.height/2);
+  ectx.restore();
+  clampCrop();
+  syncCropBox();
+}
+
+function canvasOffset(){
+  var cvW=parseInt(ec.style.width,10)||ec.offsetWidth||0;
+  var cvH=parseInt(ec.style.height,10)||ec.offsetHeight||0;
+  return{
+    x:Math.max(0,Math.round((cout.offsetWidth-cvW)/2)),
+    y:Math.max(0,Math.round((cout.offsetHeight-cvH)/2))
+  };
+}
+function syncCropBox(){
+  var off=canvasOffset(),ds=dispScale;
+  cb.style.left  =Math.round(off.x+S.crop.x*ds)+'px';
+  cb.style.top   =Math.round(off.y+S.crop.y*ds)+'px';
+  cb.style.width =Math.round(S.crop.w*ds)+'px';
+  cb.style.height=Math.round(S.crop.h*ds)+'px';
+}
+function clampCrop(){
+  var W=ec.width,H=ec.height,MIN=40;
+  S.crop.w=clamp(S.crop.w,MIN,W);
+  S.crop.h=clamp(S.crop.h,MIN,H);
+  S.crop.x=clamp(S.crop.x,0,W-S.crop.w);
+  S.crop.y=clamp(S.crop.y,0,H-S.crop.h);
+}
+function initCropBox(){
+  var W=ec.width,H=ec.height,PR=getPR();
+  var cw=Math.round(W*0.62);
+  var ch=Math.round(cw/PR);
+  if(ch>H*0.85){ch=Math.round(H*0.85);cw=Math.round(ch*PR);}
+  S.crop={x:Math.round((W-cw)/2),y:Math.round((H-ch)/2),w:cw,h:ch};
+  syncCropBox();
+}
+function resetControls(){
+  S.rot90=0;S.fine=0;S.flipH=false;S.flipV=false;
+  S.bright=100;S.cont=100;S.sat=100;
+  $('rfine').value=0;$('vfine').textContent='0';
+  $('rbr').value=100;$('vbr').textContent='100';
+  $('rco').value=100;$('vco').textContent='100';
+  $('rsa').value=100;$('vsa').textContent='100';
+  ['fliph','flipv'].forEach(function(id){
+    $(id).classList.remove('on');$(id).setAttribute('aria-pressed','false');
+  });
+}
+function initEditor(){
+  resetControls();
+  drawCanvas();
+  initCropBox();
+}
+
+document.querySelectorAll('.sz-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    S.photoW=parseFloat(btn.dataset.w);
+    S.photoH=parseFloat(btn.dataset.h);
+    document.querySelectorAll('.sz-btn').forEach(function(b){b.classList.toggle('on',b===btn);});
+    initCropBox();
+    toast('Size: '+S.photoW+'x'+S.photoH+'mm \u2014 crop box updated');
+  });
+});
+
+var drag=null;
+function ptrInCout(e){
+  var r=cout.getBoundingClientRect();
+  var src=e.touches?e.touches[0]:e;
+  return{cx:src.clientX-r.left,cy:src.clientY-r.top};
+}
+function startDrag(e,type){
+  e.preventDefault();
+  var pt=ptrInCout(e);
+  drag={type:type,sx:pt.cx,sy:pt.cy,
+        sc:{x:S.crop.x,y:S.crop.y,w:S.crop.w,h:S.crop.h}};
+}
+cb.addEventListener('mousedown',function(e){
+  if(e.target===cb||e.target.classList.contains('rth2'))startDrag(e,'move');
+});
+cb.addEventListener('touchstart',function(e){
+  if(e.target===cb||e.target.classList.contains('rth2'))startDrag(e,'move');
+},{passive:false});
+document.querySelectorAll('#cb .ch').forEach(function(h){
+  h.addEventListener('mousedown',function(e){e.stopPropagation();startDrag(e,h.dataset.h);});
+  h.addEventListener('touchstart',function(e){e.stopPropagation();startDrag(e,h.dataset.h);},{passive:false});
+});
+function onDragMove(e){
+  if(!drag)return;
+  e.preventDefault();
+  var pt=ptrInCout(e);
+  var dx=(pt.cx-drag.sx)/dispScale;
+  var dy=(pt.cy-drag.sy)/dispScale;
+  var W=ec.width,H=ec.height,MIN=40,PR=getPR();
+  var x=drag.sc.x,y=drag.sc.y,w=drag.sc.w,h=drag.sc.h;
+  var nw,nh;
+  if(drag.type==='move'){
+    x=clamp(x+dx,0,W-w);y=clamp(y+dy,0,H-h);
+  } else {
+    if(drag.type==='br'){nw=Math.max(MIN,w+dx);nh=Math.round(nw/PR);x=drag.sc.x;y=drag.sc.y;}
+    else if(drag.type==='bl'){nw=Math.max(MIN,w-dx);nh=Math.round(nw/PR);x=drag.sc.x+(w-nw);y=drag.sc.y;}
+    else if(drag.type==='tr'){nw=Math.max(MIN,w+dx);nh=Math.round(nw/PR);x=drag.sc.x;y=drag.sc.y+(h-nh);}
+    else if(drag.type==='tl'){nw=Math.max(MIN,w-dx);nh=Math.round(nw/PR);x=drag.sc.x+(w-nw);y=drag.sc.y+(h-nh);}
+    w=Math.max(MIN,nw);h=Math.max(MIN,nh);
+    if(x<0){w+=x;x=0;}if(y<0){h+=y;y=0;}
+    if(x+w>W)w=W-x;if(y+h>H)h=H-y;
+  }
+  S.crop={x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h)};
+  clampCrop();syncCropBox();
+}
+function onDragEnd(){drag=null;}
+window.addEventListener('mousemove',onDragMove);
+window.addEventListener('touchmove',onDragMove,{passive:false});
+window.addEventListener('mouseup',onDragEnd);
+window.addEventListener('touchend',onDragEnd);
+var _rsz;
+window.addEventListener('resize',function(){
+  clearTimeout(_rsz);
+  _rsz=setTimeout(function(){
+    if(S.srcImg&&$('p2').classList.contains('on'))syncCropBox();
+  },120);
+});
+
+function bindSlider(id,vid,key){
+  var el=$(id);
+  el.addEventListener('input',function(){
+    S[key]=parseFloat(el.value);$(vid).textContent=el.value;drawCanvas();
+  });
+}
+bindSlider('rfine','vfine','fine');
+bindSlider('rbr','vbr','bright');
+bindSlider('rco','vco','cont');
+bindSlider('rsa','vsa','sat');
+
+$('rotl').addEventListener('click',function(){S.rot90=(S.rot90-1+4)%4;drawCanvas();initCropBox();});
+$('rotr').addEventListener('click',function(){S.rot90=(S.rot90+1)%4;drawCanvas();initCropBox();});
+
+function toggleFlip(key,id){
+  S[key]=!S[key];$(id).classList.toggle('on',S[key]);
+  $(id).setAttribute('aria-pressed',String(S[key]));drawCanvas();
+}
+$('fliph').addEventListener('click',function(){toggleFlip('flipH','fliph');});
+$('flipv').addEventListener('click',function(){toggleFlip('flipV','flipv');});
+
+$('btnreset').addEventListener('click',function(){
+  resetControls();drawCanvas();initCropBox();toast('Edits reset');
+});
+$('btn21').addEventListener('click',function(){setStep(1);});
+$('btn23').addEventListener('click',function(){setStep(3);});
+
+function getCroppedCanvas(){
+  var out=document.createElement('canvas');
+  out.width=S.crop.w;out.height=S.crop.h;
+  out.getContext('2d').drawImage(ec,S.crop.x,S.crop.y,S.crop.w,S.crop.h,0,0,S.crop.w,S.crop.h);
+  return out;
+}
+
+function drawFit(ctx,srcCv,dx,dy,cellW,cellH){
+  var sw=srcCv.width,sh=srcCv.height;
+  if(!sw||!sh)return;
+  var srcR=sw/sh,cellR=cellW/cellH;
+  var dw,dh,ox,oy;
+  if(srcR>cellR){
+    dw=cellW;dh=Math.round(cellW/srcR);
+    ox=dx;oy=dy+Math.round((cellH-dh)/2);
+  } else {
+    dh=cellH;dw=Math.round(cellH*srcR);
+    oy=dy;ox=dx+Math.round((cellW-dw)/2);
+  }
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+  ctx.drawImage(srcCv,0,0,sw,sh,ox,oy,dw,dh);
+}
+
+function renderLayout(cropCv,layout,targetCv){
+  var tctx=targetCv.getContext('2d');
+  var W=targetCv.width,H=targetCv.height;
+  var cols=layout.cols,rows=layout.rows;
+  var scale=W/PW;
+  var margin=Math.max(4,Math.round(CMARGIN*scale));
+  var gap=Math.max(3,Math.round(CGAP*scale));
+
+  tctx.fillStyle='#ffffff';
+  tctx.fillRect(0,0,W,H);
+
+  var cellW=Math.floor((W-margin*2-gap*(cols-1))/cols);
+  var cellH=Math.floor((H-margin*2-gap*(rows-1))/rows);
+  var totalW=cols*cellW+gap*(cols-1);
+  var totalH=rows*cellH+gap*(rows-1);
+  var startX=Math.round((W-totalW)/2);
+  var startY=Math.round((H-totalH)/2);
+
+  for(var r=0;r<rows;r++){
+    for(var c=0;c<cols;c++){
+      var dx=startX+c*(cellW+gap);
+      var dy=startY+r*(cellH+gap);
+      drawFit(tctx,cropCv,dx,dy,cellW,cellH);
+      if(layout.guides){
+        tctx.save();
+        tctx.strokeStyle='rgba(0,0,0,0.38)';
+        tctx.lineWidth=Math.max(1,Math.round(W/900));
+        tctx.setLineDash([6,5]);
+        tctx.beginPath();tctx.moveTo(dx,dy);tctx.lineTo(dx+cellW,dy);tctx.stroke();
+        tctx.beginPath();tctx.moveTo(dx,dy+cellH);tctx.lineTo(dx+cellW,dy+cellH);tctx.stroke();
+        tctx.beginPath();tctx.moveTo(dx,dy);tctx.lineTo(dx,dy+cellH);tctx.stroke();
+        tctx.beginPath();tctx.moveTo(dx+cellW,dy);tctx.lineTo(dx+cellW,dy+cellH);tctx.stroke();
+        tctx.restore();
+      }
+    }
+  }
+}
+
+function currentLayout(){
+  return LAYOUTS.filter(function(l){return l.id===S.layout;})[0]||LAYOUTS[0];
+}
+
+function buildLayoutStep(){
+  var cropCv=getCroppedCanvas();
+  var grid=$('lgrid');
+  grid.innerHTML='';
+
+  LAYOUTS.forEach(function(L){
+    var totalPhotos=L.cols*L.rows;
+    var card=document.createElement('div');
+    card.className='lc'+(L.id===S.layout?' sel':'');
+    card.setAttribute('role','radio');
+    card.setAttribute('aria-checked',L.id===S.layout?'true':'false');
+    card.setAttribute('tabindex','0');
+    card.dataset.id=L.id;
+
+    var thumbDiv=document.createElement('div');
+    thumbDiv.className='lthumb';
+    thumbDiv.style.cssText=
+      'width:100%;aspect-ratio:3/2;border-radius:4px;overflow:hidden;'+
+      'background:#f0f0f0;margin-bottom:8px;position:relative;';
+
+    var badge=document.createElement('div');
+    badge.className='cnt-badge';
+    badge.textContent=totalPhotos+' photos';
+    thumbDiv.appendChild(badge);
+
+    var tc=document.createElement('canvas');
+    tc.width=360;tc.height=240;
+    tc.style.cssText='width:100%;height:100%;display:block;';
+    thumbDiv.appendChild(tc);
+
+    var nameDiv=document.createElement('div');
+    nameDiv.className='lname';nameDiv.textContent=L.name;
+    var descDiv=document.createElement('div');
+    descDiv.className='ldesc';descDiv.textContent=L.desc;
+
+    card.appendChild(thumbDiv);
+    card.appendChild(nameDiv);
+    card.appendChild(descDiv);
+    grid.appendChild(card);
+
+    renderLayout(cropCv,L,tc);
+
+    function selectLayout(){
+      S.layout=L.id;
+      document.querySelectorAll('.lc').forEach(function(c){
+        var sel=c.dataset.id===L.id;
+        c.classList.toggle('sel',sel);
+        c.setAttribute('aria-checked',sel?'true':'false');
+      });
+      updatePreview(cropCv);
+    }
+    card.addEventListener('click',selectLayout);
+    card.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();selectLayout();}
+    });
+  });
+
+  updatePreview(cropCv);
+}
+
+function updatePreview(cropCv){
+  var layout=currentLayout();
+  var pvc=$('pvc');
+  pvc.width=720;pvc.height=480;
+  pvc.style.cssText=
+    'width:100%;max-width:560px;height:auto;border-radius:7px;'+
+    'border:1px solid var(--brd);box-shadow:var(--shm);display:inline-block;';
+  renderLayout(cropCv,layout,pvc);
+  $('pvnote').textContent=
+    layout.name+' \u2014 '+(layout.cols*layout.rows)+' photos \u2014 ~4mm cut space between photos';
+}
+
+$('btn32').addEventListener('click',function(){setStep(2);});
+$('btn34').addEventListener('click',function(){setStep(4);});
+
+function buildDownloadStep(){
+  var cropCv=getCroppedCanvas();
+  var layout=currentLayout();
+  var fvc=$('fvc');
+  fvc.width=720;fvc.height=480;
+  fvc.style.cssText=
+    'width:100%;max-width:560px;height:auto;border-radius:7px;'+
+    'border:1px solid var(--brd);box-shadow:var(--shm);display:inline-block;';
+  renderLayout(cropCv,layout,fvc);
+  $('fvnote').textContent=
+    layout.name+' \u2014 '+(layout.cols*layout.rows)+' photos \u2014 1800\xd71200 px full resolution';
+}
+
+document.querySelectorAll('.fb').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    S.fmt=btn.dataset.fmt;
+    document.querySelectorAll('.fb').forEach(function(b){
+      var sel=b.dataset.fmt===S.fmt;
+      b.classList.toggle('sel',sel);
+      b.setAttribute('aria-pressed',sel?'true':'false');
+    });
+  });
+});
+
+$('btndl').addEventListener('click',function(){
+  var cropCv=getCroppedCanvas();
+  var layout=currentLayout();
+  var printCv=document.createElement('canvas');
+  printCv.width=PW;printCv.height=PH;
+  renderLayout(cropCv,layout,printCv);
+  var mime=S.fmt==='png'?'image/png':'image/jpeg';
+  var ext=S.fmt==='png'?'.png':'.jpg';
+  var quality=S.fmt==='png'?1:0.95;
+  var fname=S.fileName+'-'+layout.id+'-6x4'+ext;
+  try{
+    var a=document.createElement('a');
+    a.href=printCv.toDataURL(mime,quality);
+    a.download=fname;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    toast('Downloaded: '+fname);
+  } catch(err){
+    toast('Download failed \u2014 try JPEG or a different browser.');
+    console.error('Download error:',err);
+  }
+});
+
+$('btnprint').addEventListener('click',function(){
+  var cropCv=getCroppedCanvas();
+  var layout=currentLayout();
+  var pc=$('print-canvas');
+  pc.width=PW;pc.height=PH;
+  renderLayout(cropCv,layout,pc);
+  pc.style.maxWidth='100%';
+  var pt=$('print-target');
+  pt.style.display='block';
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){pt.style.display='none';},1000);
+  },200);
+  toast('Opening print dialog...');
+});
+
+$('btn43').addEventListener('click',function(){setStep(3);});
+
+$('btnrestart').addEventListener('click',function(){
+  S.srcImg=null;S.fileName='passport-photo';
+  S.rot90=0;S.fine=0;S.flipH=false;S.flipV=false;
+  S.bright=100;S.cont=100;S.sat=100;
+  S.crop={x:0,y:0,w:0,h:0};
+  S.photoW=35;S.photoH=45;
+  S.layout='4x2';S.fmt='jpeg';
+  $('upw').style.display='none';
+  $('uimg').src='';$('uinfo').textContent='';
+  $('btn12').disabled=true;
+  $('fi').value='';
+  document.querySelectorAll('.sz-btn').forEach(function(b,i){b.classList.toggle('on',i===0);});
+  document.querySelectorAll('.fb').forEach(function(b){
+    var sel=b.dataset.fmt==='jpeg';
+    b.classList.toggle('sel',sel);
+    b.setAttribute('aria-pressed',sel?'true':'false');
+  });
+  setStep(1);
+  toast('Started over \u2014 upload a new photo');
+});
+
+})();
+</script>
+</body>
+</html>
