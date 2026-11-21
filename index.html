@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniTools Hub — 50 Free Browser-Based Photo, PDF, Calculator & Utility Tools</title>
+  <meta name="description" content="Free, privacy-first browser-based utilities for India and international users. Passport Photo Maker, PDF tools, Indian & global calculators, student tools, and offline mini-games." />
+  
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  
+  <style>
+    :root {
+      --bg-page: #F5F9FF;
+      --bg-card: #FFFFFF;
+      --text-primary: #101B3B;
+      --text-secondary: #52607A;
+      --border-light: #DCE8F8;
+      --accent-blue: #2563EB;
+      --accent-blue-soft: #EFF6FF;
+      --accent-green: #16A34A;
+      --shadow-card: 0 3px 10px rgba(16, 27, 59, 0.04);
+      --shadow-hover: 0 6px 16px rgba(37, 99, 235, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, select {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      user-select: text;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.45;
+      padding: 14px 16px 36px;
+      background-image:
+        radial-gradient(circle at 12% 10%, rgba(191, 219, 254, 0.45) 0%, transparent 35%),
+        radial-gradient(circle at 88% 12%, rgba(199, 210, 254, 0.40) 0%, transparent 35%);
+    }
+
+    /* Main Outer Container */
+    .hub-wrapper {
+      max-width: 1120px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 20px 24px;
+      box-shadow: 0 10px 30px rgba(16, 27, 59, 0.06);
+      backdrop-filter: blur(12px);
+    }
+
+    /* Compact Header + Search Row Combined */
+    .top-bar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .brand-block h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .brand-block .subtitle {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .search-box-wrap {
+      flex: 1 1 260px;
+      max-width: 360px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 9px 14px 9px 34px;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      font-size: 13.5px;
+      color: var(--text-primary);
+      background: #F8FBFF;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .search-input:focus {
+      background: #FFFFFF;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      color: #64748B;
+      pointer-events: none;
+    }
+
+    /* Single-Line Compact 6-Category Bar */
+    .category-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .category-strip {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        scrollbar-width: thin;
+      }
+      .cat-pill {
+        flex: 0 0 auto;
+        min-width: 145px;
+      }
+    }
+
+    .cat-pill {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-light);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .cat-pill:hover {
+      transform: translateY(-1px);
+      border-color: #93C5FD;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .cat-pill.active {
+      border-color: var(--accent-blue);
+      background: #EFF6FF;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.14);
+    }
+
+    .cat-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .cat-meta {
+      min-width: 0;
+    }
+
+    .cat-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cat-count {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Tools Directory Area (Visible immediately above the fold) */
+    .tools-drawer {
+      margin-bottom: 18px;
+      padding: 18px;
+      background: #F8FAFC;
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    .drawer-header h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .btn-close-drawer {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .btn-close-drawer:hover {
+      background: #F1F5F9;
+      color: var(--text-primary);
+    }
+
+    .tools-list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .tool-item {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .tool-item:hover {
+      border-color: var(--accent-blue);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+    }
+
+    .tool-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+
+    .tool-num {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--accent-blue);
+      background: var(--accent-blue-soft);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
+    .tool-status {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: #DCFCE7;
+      color: #15803D;
+    }
+
+    .tool-status.planned {
+      background: #F1F5F9;
+      color: #475569;
+    }
+
+    .tool-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .tool-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 9px;
+    }
+
+    .tool-launch-btn {
+      align-self: flex-start;
+      background: var(--accent-blue);
+      color: #FFFFFF;
+      border: none;
+      padding: 5px 11px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tool-launch-btn:hover {
+      background: #1D4ED8;
+    }
+
+    /* Flagship Passport Photo Maker Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(16, 27, 59, 0.55);
+      z-index: 999;
+      padding: 20px;
+      overflow-y: auto;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-box {
+      max-width: 760px;
+      margin: 20px auto;
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 22px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #E2E8F0;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .passport-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .control-group select, .control-group input[type="file"], .control-group input[type="color"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      font-size: 13px;
+      background: #F8FAFC;
+    }
+
+    .canvas-preview-wrap {
+      background: #F1F5F9;
+      border: 1px dashed #94A3B8;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+
+    canvas#passportCanvas {
+      background: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* AdSense Placeholder Slot */
+    .ad-slot {
+      margin: 14px 0;
+      padding: 10px;
+      border: 1px dashed #CBD5E1;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 11px;
+      color: #94A3B8;
+      background: #FAFBFD;
+    }
+
+    /* Bottom Privacy-First Architecture Banner */
+    .privacy-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 12px;
+    }
+
+    .shield-icon {
+      font-size: 19px;
+      color: var(--accent-green);
+      line-height: 1;
+    }
+
+    .privacy-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .privacy-desc {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hub-wrapper">
+    <!-- Compact Top Header + Search Bar in One Row -->
+    <header class="top-bar-row">
+      <div class="brand-block">
+        <h1>🌐 Your Tools Website</h1>
+        <p class="subtitle">One website &middot; Multiple independent browser utilities</p>
+      </div>
+
+      <div class="search-box-wrap">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          id="toolSearchInput"
+          class="search-input"
+          placeholder="Search 50 tools (Passport, PDF, GST, 2048)..."
+          autocomplete="off"
+        />
+      </div>
+    </header>
+
+    <!-- Single-Line 6 Category Buttons -->
+    <nav class="category-strip" id="categoryGrid" aria-label="Tool Categories">
+      <button type="button" class="cat-pill active" data-category="photo">
+        <span class="cat-icon" style="background:#EFF6FF; color:#1D4ED8;">📷</span>
+        <div class="cat-meta">
+          <div class="cat-title">Photo Tools</div>
+          <div class="cat-count">10 tools</div>
+        </div>
+      </button>
+
+      <button type="button" class="cat-pill" data-category="pdf">
+        <span class="cat-icon" style="background:#FEF2F2; color:#DC2626;">📄</span>
+        <div class="cat-meta">
+          <div class="cat-title">PDF Tools</div>
+          <div class="cat-count">10 tools</div>
+        </div>
+      </button>
+
+      <button type="button" class="cat-pill" data-category="calculators">
+        <span class="cat-icon" style="background:#F0FDF4; color:#15803D;">🧮</span>
+        <div class="cat-meta">
+          <div class="cat-title">Calculators</div>
+          <div class="cat-count">10 tools</div>
+        </div>
+      </button>
+
+      <button type="button" class="cat-pill" data-category="student">
+        <span class="cat-icon" style="background:#FFFBEB; color:#B45309;">🎓</span>
+        <div class="cat-meta">
+          <div class="cat-title">Student Tools</div>
+          <div class="cat-count">8 tools</div>
+        </div>
+      </button>
+
+      <button type="button" class="cat-pill" data-category="games">
+        <span class="cat-icon" style="background:#F5F3FF; color:#6D28D9;">🎮</span>
+        <div class="cat-meta">
+          <div class="cat-title">Mini Games</div>
+          <div class="cat-count">8 games</div>
+        </div>
+      </button>
+
+      <button type="button" class="cat-pill" data-category="utilities">
+        <span class="cat-icon" style="background:#ECFEFF; color:#0E7490;">🔧</span>
+        <div class="cat-meta">
+          <div class="cat-title">Utilities</div>
+          <div class="cat-count">4 tools</div>
+        </div>
+      </button>
+    </nav>
+
+    <!-- Tools Directory (Immediately Visible Without Scrolling) -->
+    <section class="tools-drawer" id="toolsDrawer">
+      <div class="drawer-header">
+        <h2 id="drawerTitle">Photo &amp; Image Utilities (10 Tools — Flagship Category)</h2>
+        <button type="button" class="btn-close-drawer" id="closeDrawerBtn">Hide &times;</button>
+      </div>
+      <div class="tools-list-grid" id="toolsListGrid"></div>
+    </section>
+
+    <!-- AdSense Display Unit Container -->
+    <div class="ad-slot">
+      Advertisement Space &middot; Responsive Google AdSense Banner
+    </div>
+
+    <!-- Bottom Privacy-First Architecture Banner -->
+    <footer class="privacy-banner">
+      <span class="shield-icon" aria-hidden="true">🛡️</span>
+      <div>
+        <div class="privacy-title">Common privacy-first architecture</div>
+        <div class="privacy-desc">
+          All tools run in the visitor's browser. No application server or user database is required.
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Live Flagship Tool Modal: Passport Photo Maker -->
+  <div class="modal-backdrop" id="passportModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <h3 style="font-size:18px; font-weight:800;">Passport Photo Maker (35×45mm &amp; A4 / 4×6 Sheet)</h3>
+          <p style="font-size:12px; color:#52607A;">100% Local Browser Processing — Your photo never leaves your device.</p>
+        </div>
+        <button type="button" class="btn-close-drawer" id="closePassportModal">Close &times;</button>
+      </div>
+
+      <div class="passport-controls">
+        <div class="control-group">
+          <label for="photoUpload">1. Upload Photo</label>
+          <input type="file" id="photoUpload" accept="image/*" />
+        </div>
+        <div class="control-group">
+          <label for="photoSizePreset">2. Photo Size Standard</label>
+          <select id="photoSizePreset">
+            <option value="35x45">India / UK / EU (35 × 45 mm)</option>
+            <option value="51x51">USA / OCI (2 × 2 inch / 51 × 51 mm)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="sheetLayout">3. Print Sheet Layout</label>
+          <select id="sheetLayout">
+            <option value="4x6">4 × 6 inch Sheet (6 Photos)</option>
+            <option value="a4">A4 Sheet (30 Photos)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="bgColorPicker">4. Background Tint</label>
+          <input type="color" id="bgColorPicker" value="#FFFFFF" />
+        </div>
+      </div>
+
+      <div class="canvas-preview-wrap">
+        <canvas id="passportCanvas" width="600" height="400"></canvas>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+        <button type="button" class="tool-launch-btn" id="downloadSheetBtn" style="background:#16A34A; padding:9px 16px; font-size:13px;">
+          Download Print Sheet (JPG)
+        </button>
+        <button type="button" class="tool-launch-btn" id="printSheetBtn" style="padding:9px 16px; font-size:13px;">
+          Print Sheet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      // 1. Disable Right-Click Context Menu & Common DevTools/View-Source Shortcuts
+      $(document).on("contextmenu", function (e) {
+        e.preventDefault();
+        return false;
+      });
+
+      $(document).on("keydown", function (e) {
+        if (e.keyCode === 123) {
+          e.preventDefault();
+          return false;
+        }
+        if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+          e.preventDefault();
+          return false;
+        }
+        if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // 2. Complete 50-Tool Catalog
+      const catalog = {
+        photo: {
+          title: "Photo & Image Utilities (10 Tools — Flagship Category)",
+          tools: [
+            { num: 1, name: "Passport Photo Maker", desc: "35×45mm & 2×2 inch presets, 4×6 & A4 sheets, crop, print & download.", status: "Flagship Ready", action: "passport" },
+            { num: 2, name: "Photo & Signature Resizer", desc: "Exact pixel dimensions, KB limits & Indian exam signature presets.", status: "Module Ready" },
+            { num: 3, name: "Image Compressor", desc: "Compress JPG, PNG and WebP with target KB size & quality controls.", status: "Module Ready" },
+            { num: 4, name: "Image Format Converter", desc: "Batch convert between JPG, PNG and WebP directly in browser.", status: "Module Ready" },
+            { num: 5, name: "Photo Collage Maker", desc: "2, 4, 6, 9 and 12-photo arrangements with custom borders.", status: "Planned" },
+            { num: 6, name: "Photo Background Changer", desc: "Client-side background removal with white/blue replacement.", status: "Planned" },
+            { num: 7, name: "Image Cropper", desc: "Free crop, fixed aspect ratios, circular crop and rotation.", status: "Module Ready" },
+            { num: 8, name: "Image Resizer", desc: "Resize images by pixels, percentage, centimetres and inches.", status: "Module Ready" },
+            { num: 9, name: "Image Rotator & Flipper", desc: "Rotate 90°, 180°, 270°, horizontal flip and vertical flip.", status: "Module Ready" },
+            { num: 10, name: "Photo Contact Sheet Maker", desc: "Arrange multiple photographs on A4, 4×6 and custom print sheets.", status: "Planned" }
+          ]
+        },
+        pdf: {
+          title: "PDF & Document Utilities (10 Tools — PDF-lib & PDF.js Powered)",
+          tools: [
+            { num: 11, name: "PDF Merger", desc: "Combine multiple PDF documents in order with zero server uploads.", status: "Priority 1" },
+            { num: 12, name: "PDF Splitter", desc: "Split a PDF into individual pages or custom page ranges.", status: "Planned" },
+            { num: 13, name: "PDF Page Rotator", desc: "Rotate specific or all pages in a PDF permanently.", status: "Planned" },
+            { num: 14, name: "PDF Page Reorderer", desc: "Drag and rearrange PDF pages visually before exporting.", status: "Planned" },
+            { num: 15, name: "PDF Page Deleter", desc: "Remove unwanted pages from any PDF file locally.", status: "Planned" },
+            { num: 16, name: "PDF to Image Converter", desc: "Render PDF pages and export as high-res JPG or PNG.", status: "Planned" },
+            { num: 17, name: "Image to PDF Converter", desc: "Convert JPG/PNG photos into a single print-ready PDF.", status: "Priority 1" },
+            { num: 18, name: "PDF Page Extractor", desc: "Extract selected pages into a brand-new PDF document.", status: "Planned" },
+            { num: 19, name: "PDF Metadata Viewer", desc: "Inspect author, creation date, page size and PDF properties.", status: "Planned" },
+            { num: 20, name: "PDF Password Protection Tool", desc: "Add or manage PDF encryption directly in your browser.", status: "Planned" }
+          ]
+        },
+        calculators: {
+          title: "Calculators & Converters (10 Tools — India & Global)",
+          tools: [
+            { num: 21, name: "Age Calculator", desc: "Exact age in years, months, days, weeks and next birthday countdown.", status: "Ready" },
+            { num: 22, name: "EMI Calculator", desc: "Home/car/personal loan EMI with Indian Rupee (₹) formatting.", status: "Ready" },
+            { num: 23, name: "Percentage Calculator", desc: "Quick percentage increase, decrease, marks and ratio calculations.", status: "Planned" },
+            { num: 24, name: "GST Calculator", desc: "Inclusive & exclusive Indian GST breakdown (5%, 12%, 18%, 28%).", status: "Planned" },
+            { num: 25, name: "Discount Calculator", desc: "Calculate final sale price and total savings instantly.", status: "Planned" },
+            { num: 26, name: "Date Difference Calculator", desc: "Exact duration in days, weeks and months between any two dates.", status: "Ready" },
+            { num: 27, name: "Unit Converter", desc: "Convert length, weight, temperature, area, speed and volume.", status: "Planned" },
+            { num: 28, name: "Land Measurement Converter", desc: "Convert Acre, Gunta, Cent, Sq. Yard, Sq. Metre & Sq. Feet.", status: "India Focus" },
+            { num: 29, name: "Salary Calculator", desc: "In-hand take-home pay estimator with configurable PF/tax deductions.", status: "Planned" },
+            { num: 30, name: "Compound Interest Calculator", desc: "Wealth growth & SIP/FD compounding visualizer.", status: "Planned" }
+          ]
+        },
+        student: {
+          title: "Educational & Productivity Utilities (8 Tools)",
+          tools: [
+            { num: 31, name: "Word Counter", desc: "Live count of words, characters, sentences, paragraphs & reading time.", status: "Planned" },
+            { num: 32, name: "Case Converter", desc: "Convert text to UPPERCASE, lowercase, Title Case & Sentence case.", status: "Planned" },
+            { num: 33, name: "QR Code Generator", desc: "Generate downloadable QR codes for URLs, Wi-Fi, text & vCards.", status: "Planned" },
+            { num: 34, name: "Typing Speed Test", desc: "Measure WPM, accuracy percentage and keystroke errors.", status: "Planned" },
+            { num: 35, name: "Number to Words Converter", desc: "Convert numbers into Indian (Lakhs/Crores) & International words.", status: "Planned" },
+            { num: 36, name: "Roman Numeral Converter", desc: "Convert between standard numbers and Roman numerals.", status: "Planned" },
+            { num: 37, name: "Binary / Decimal Converter", desc: "Instant conversion across Binary, Decimal, Octal & Hexadecimal.", status: "Planned" },
+            { num: 38, name: "Graph Paper & Ruled Sheet Generator", desc: "Printable A4 & Letter ruled, grid and dot sheets with custom spacing.", status: "Planned" }
+          ]
+        },
+        games: {
+          title: "Offline Mini-Games (8 Games — Touch & Keyboard Ready)",
+          tools: [
+            { num: 39, name: "2048 Puzzle", desc: "Classic sliding tile number puzzle with local high-score saving.", status: "Planned" },
+            { num: 40, name: "Snake Game", desc: "Retro arcade snake with mobile touch controls and speed levels.", status: "Planned" },
+            { num: 41, name: "Tic Tac Toe", desc: "Play against smart AI or 2-player local mode.", status: "Planned" },
+            { num: 42, name: "Sudoku", desc: "Easy, Medium & Hard logic puzzles with pencil notes and timer.", status: "Planned" },
+            { num: 43, name: "Memory Match", desc: "Card-flip concentration game with move counter and best score.", status: "Planned" },
+            { num: 44, name: "Word Search", desc: "Interactive themed word grids for students and puzzle fans.", status: "Planned" },
+            { num: 45, name: "Reaction Time Test", desc: "Measure visual reflex speed in milliseconds.", status: "Planned" },
+            { num: 46, name: "Minesweeper", desc: "Classic logic mine-clearing grid with Beginner to Expert modes.", status: "Planned" }
+          ]
+        },
+        utilities: {
+          title: "Everyday Utilities (4 Tools)",
+          tools: [
+            { num: 47, name: "Calendar Generator", desc: "Printable monthly & yearly calendars plus Hijri date conversion.", status: "Ready" },
+            { num: 48, name: "Random Number Generator", desc: "Generate custom ranges, dice rolls and lottery/raffle picks.", status: "Planned" },
+            { num: 49, name: "Stopwatch & Countdown Timer", desc: "Precision lap stopwatch and audible countdown timer.", status: "Planned" },
+            { num: 50, name: "Colour Picker & Palette Generator", desc: "HEX, RGB, HSL picker with harmonious palette export.", status: "Planned" }
+          ]
+        }
+      };
+
+      // Render Tool Cards inside Drawer
+      function renderTools(titleText, toolArray) {
+        $("#drawerTitle").text(titleText);
+        const $grid = $("#toolsListGrid").empty();
+
+        if (toolArray.length === 0) {
+          $grid.append('<p style="font-size:13.5px; color:#64748B;">No matching tools found. Try another keyword.</p>');
+        } else {
+          $.each(toolArray, function (_, tool) {
+            const isReady = tool.status.includes("Ready") || tool.status.includes("Priority") || tool.status.includes("Focus");
+            const badgeClass = isReady ? "tool-status" : "tool-status planned";
+            const btnLabel = tool.action === "passport" ? "Open Live Tool" : "View Module";
+
+            const cardHtml = `
+              <div class="tool-item">
+                <div>
+                  <div class="tool-item-top">
+                    <span class="tool-num">#${tool.num}</span>
+                    <span class="${badgeClass}">${tool.status}</span>
+                  </div>
+                  <div class="tool-name">${tool.name}</div>
+                  <div class="tool-desc">${tool.desc}</div>
+                </div>
+                <button type="button" class="tool-launch-btn" data-action="${tool.action || ''}" data-name="${tool.name}">
+                  ${btnLabel} &rarr;
+                </button>
+              </div>
+            `;
+            $grid.append(cardHtml);
+          });
+        }
+
+        $("#toolsDrawer").fadeIn(150);
+      }
+
+      // Default open Flagship Photo Tools immediately on page load so there is zero empty space
+      renderTools(catalog.photo.title, catalog.photo.tools);
+
+      // Click Category Pill
+      $(".cat-pill").on("click", function () {
+        const catKey = $(this).data("category");
+        $(".cat-pill").removeClass("active");
+        $(this).addClass("active");
+        $("#toolSearchInput").val("");
+
+        const selected = catalog[catKey];
+        if (selected) {
+          renderTools(selected.title, selected.tools);
+        }
+      });
+
+      // Live Search Across All 50 Tools
+      $("#toolSearchInput").on("input", function () {
+        const query = $(this).val().toLowerCase().trim();
+        $(".cat-pill").removeClass("active");
+
+        if (!query) {
+          $(".cat-pill[data-category='photo']").addClass("active");
+          renderTools(catalog.photo.title, catalog.photo.tools);
+          return;
+        }
+
+        const matches = [];
+        $.each(catalog, function (_, catObj) {
+          $.each(catObj.tools, function (_, tool) {
+            if (
+              tool.name.toLowerCase().includes(query) ||
+              tool.desc.toLowerCase().includes(query) ||
+              String(tool.num) === query
+            ) {
+              matches.push(tool);
+            }
+          });
+        });
+
+        renderTools(`Search Results for "${query}" (${matches.length} found)`, matches);
+      });
+
+      // Hide Drawer
+      $("#closeDrawerBtn").on("click", function () {
+        $("#toolsDrawer").slideUp(160);
+        $(".cat-pill").removeClass("active");
+      });
+
+      // Launch Tool Action
+      $(document).on("click", ".tool-launch-btn", function () {
+        const action = $(this).data("action");
+        const toolName = $(this).data("name");
+
+        if (action === "passport") {
+          $("#passportModal").fadeIn(180);
+          drawPassportSheet();
+        } else {
+          alert(toolName + " — Ready to build next in our modular HTML/jQuery structure!");
+        }
+      });
+
+      // 3. Flagship Passport Photo Maker Canvas Engine
+      let uploadedImg = null;
+      const canvas = document.getElementById("passportCanvas");
+      const ctx = canvas.getContext("2d");
+
+      function drawPassportSheet() {
+        const layout = $("#sheetLayout").val();
+        const preset = $("#photoSizePreset").val();
+        const bgColor = $("#bgColorPicker").val();
+
+        if (layout === "a4") {
+          canvas.width = 827;
+          canvas.height = 1169;
+        } else {
+          canvas.width = 600;
+          canvas.height = 400;
+        }
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const photoW = preset === "51x51" ? 170 : 138;
+        const photoH = preset === "51x51" ? 170 : 177;
+        const gap = 18;
+
+        const cols = Math.floor((canvas.width - gap) / (photoW + gap));
+        const rows = Math.floor((canvas.height - gap) / (photoH + gap));
+
+        const startX = Math.floor((canvas.width - (cols * photoW + (cols - 1) * gap)) / 2);
+        const startY = Math.floor((canvas.height - (rows * photoH + (rows - 1) * gap)) / 2);
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = startX + c * (photoW + gap);
+            const y = startY + r * (photoH + gap);
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(x, y, photoW, photoH);
+
+            if (uploadedImg) {
+              const imgRatio = uploadedImg.width / uploadedImg.height;
+              const boxRatio = photoW / photoH;
+              let sx, sy, sWidth, sHeight;
+
+              if (imgRatio > boxRatio) {
+                sHeight = uploadedImg.height;
+                sWidth = uploadedImg.height * boxRatio;
+                sx = (uploadedImg.width - sWidth) / 2;
+                sy = 0;
+              } else {
+                sWidth = uploadedImg.width;
+                sHeight = uploadedImg.width / boxRatio;
+                sx = 0;
+                sy = (uploadedImg.height - sHeight) / 2;
+              }
+              ctx.drawImage(uploadedImg, sx, sy, sWidth, sHeight, x, y, photoW, photoH);
+            } else {
+              ctx.fillStyle = "#CBD5E1";
+              ctx.beginPath();
+              ctx.arc(x + photoW / 2, y + photoH * 0.38, photoW * 0.22, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(x + photoW / 2, y + photoH * 0.88, photoW * 0.36, Math.PI, 0);
+              ctx.fill();
+            }
+
+            ctx.strokeStyle = "#94A3B8";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, photoW, photoH);
+          }
+        }
+      }
+
+      $("#photoUpload").on("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = new Image();
+          img.onload = function () {
+            uploadedImg = img;
+            drawPassportSheet();
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      $("#photoSizePreset, #sheetLayout, #bgColorPicker").on("change input", drawPassportSheet);
+
+      $("#downloadSheetBtn").on("click", function () {
+        const link = document.createElement("a");
+        link.download = "passport-photo-sheet.jpg";
+        link.href = canvas.toDataURL("image/jpeg", 0.95);
+        link.click();
+      });
+
+      $("#printSheetBtn").on("click", function () {
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+        const win = window.open("", "_blank");
+        win.document.write(`<img src="${dataUrl}" style="max-width:100%;" onload="window.print();window.close();" />`);
+        win.document.close();
+      });
+
+      $("#closePassportModal").on("click", function () {
+        $("#passportModal").fadeOut(180);
+      });
+    });
+  </script>
+</body>
+</html>
