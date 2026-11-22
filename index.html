@@ -545,6 +545,8 @@
         <button type="button" class="btn-close-drawer" id="closePassportModal">Close &times;</button>
       </div>
 
+      <div class="master-studio-bar" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#f0f9e8;border:1px solid #b7e187;border-radius:10px;padding:12px 16px;margin-bottom:14px;">
+
       <div class="passport-controls">
         <div class="control-group">
           <label for="photoUpload">1. Upload Photo</label>
@@ -801,7 +803,11 @@
           window.location.href = "image-rotator-flipper.html";
         } else if (toolName === "Photo Contact Sheet Maker") {
           window.location.href = "photo-contact-sheet-maker.html";
-        } else {
+        }
+        else if (toolName === "PDF Merger") {
+          window.location.href = "pdf-merger.html";
+        }
+        else {
           alert(toolName + " - Ready to build next in our modular HTML/jQuery structure!");
         }
       });

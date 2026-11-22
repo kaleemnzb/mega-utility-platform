@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDF Merger — Combine Multiple PDFs Locally</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 290px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:18px 14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.pdf-list{display:flex;flex-direction:column;gap:8px}
+.pdf-item{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;
+  flex-wrap:wrap}
+.pdf-info{min-width:0;flex:1}
+.pdf-name{font-size:.8rem;font-weight:700;color:var(--txt);word-break:break-word}
+.pdf-meta{font-size:.7rem;color:var(--txt2);margin-top:2px}
+.pdf-empty{text-align:center;color:var(--txt2);font-size:.76rem;padding:24px 12px;
+  background:var(--surf2);border:1px solid var(--brd);border-radius:8px}
+.mini-btns{display:flex;gap:5px;flex-wrap:wrap}
+.mbtn{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:6px;
+  padding:5px 8px;font-family:var(--ff);font-size:.7rem;font-weight:700;cursor:pointer}
+.mbtn:hover:not(:disabled){background:var(--surf2);color:var(--txt);border-color:var(--g)}
+.mbtn:disabled{opacity:.35;cursor:not-allowed}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field input[type="text"]{width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.summary-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:12px;font-size:.74rem;color:var(--txt2);line-height:1.6}
+.summary-box strong{color:var(--txt)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover:not(:disabled){background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="pdf-merger.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">PDF Tools <em>| PDF Merger</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #11 — PDF Merger (Combine Multiple PDFs Locally)</h2></div>
+    <div class="cbody">
+      <p class="note">Select or drop two or more PDF files, arrange their order using Up/Down buttons, and merge them into a single PDF directly in your browser with zero server uploads.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop PDF files to add</div>
+            <div class="dz-sub">PDF documents &middot; Reorder pages/files before merging</div>
+          </div>
+
+          <div id="pdfList" class="pdf-list">
+            <div class="pdf-empty">No PDF files added yet. Select or drop PDFs above to begin.</div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="mergeBtn" disabled>Merge &amp; Download PDF</button>
+            <button type="button" class="bs" id="clearBtn" disabled>Clear All</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label for="outFileName">Output File Name</label>
+            <input type="text" id="outFileName" value="merged-document" maxlength="100"/>
+          </div>
+
+          <div class="summary-box" id="summaryBox">
+            <div>PDF Files: <strong id="sumFiles">0</strong></div>
+            <div>Total Pages: <strong id="sumPages">0</strong></div>
+            <div>Total Input Size: <strong id="sumSize">0 KB</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  const pdfItems = [];
+  let toastTimer = null;
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function formatSize(bytes) {
+    if (!bytes && bytes !== 0) return "—";
+    return bytes >= 1048576
+      ? (bytes / 1048576).toFixed(2) + " MB"
+      : (bytes / 1024).toFixed(1) + " KB";
+  }
+
+  function escapeHtml(str) {
+    return $("<div>").text(str || "").html();
+  }
+
+  function renderList() {
+    if (!pdfItems.length) {
+      $("#pdfList").html('<div class="pdf-empty">No PDF files added yet. Select or drop PDFs above to begin.</div>');
+      $("#mergeBtn, #clearBtn").prop("disabled", true);
+      $("#sumFiles").text("0");
+      $("#sumPages").text("0");
+      $("#sumSize").text("0 KB");
+      return;
+    }
+
+    let totalPages = 0;
+    let totalBytes = 0;
+    let html = "";
+
+    pdfItems.forEach(function (item, idx) {
+      totalPages += item.pageCount;
+      totalBytes += item.size;
+      html +=
+        '<div class="pdf-item">' +
+          '<div class="pdf-info">' +
+            '<div class="pdf-name">' + (idx + 1) + ". " + escapeHtml(item.name) + '</div>' +
+            '<div class="pdf-meta">' + item.pageCount + " page(s) &middot; " + formatSize(item.size) + '</div>' +
+          '</div>' +
+          '<div class="mini-btns">' +
+            '<button type="button" class="mbtn move-up" data-idx="' + idx + '"' + (idx === 0 ? " disabled" : "") + '>&uarr;</button>' +
+            '<button type="button" class="mbtn move-down" data-idx="' + idx + '"' + (idx === pdfItems.length - 1 ? " disabled" : "") + '>&darr;</button>' +
+            '<button type="button" class="mbtn remove-pdf" data-idx="' + idx + '">Remove</button>' +
+          '</div>' +
+        '</div>';
+    });
+
+    $("#pdfList").html(html);
+    $("#mergeBtn").prop("disabled", pdfItems.length < 2);
+    $("#clearBtn").prop("disabled", false);
+    $("#sumFiles").text(pdfItems.length);
+    $("#sumPages").text(totalPages);
+    $("#sumSize").text(formatSize(totalBytes));
+  }
+
+  async function addPdfFiles(fileList) {
+    if (!fileList || !fileList.length) return;
+    if (!window.PDFLib || !window.PDFLib.PDFDocument) {
+      showToast("PDF library failed to load. Check internet connection for CDN.");
+      return;
+    }
+
+    const { PDFDocument } = window.PDFLib;
+    let addedCount = 0;
+
+    for (const file of Array.from(fileList)) {
+      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+      if (!isPdf) continue;
+
+      try {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const doc = await PDFDocument.load(bytes);
+        pdfItems.push({
+          name: file.name || "document.pdf",
+          size: file.size || bytes.byteLength,
+          pageCount: doc.getPageCount(),
+          bytes: bytes
+        });
+        addedCount++;
+      } catch (err) {
+        showToast("Could not read '" + (file.name || "PDF") + "' (may be encrypted or corrupted).");
+      }
+    }
+
+    if (addedCount > 0) {
+      renderList();
+      showToast("Added " + addedCount + " PDF file(s)");
+    }
+  }
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files.length) addPdfFiles(dt.files);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files.length) {
+      addPdfFiles(this.files);
+      $(this).val("");
+    }
+  });
+
+  $(document).on("click", ".move-up", function () {
+    const idx = parseInt($(this).data("idx"), 10);
+    if (idx > 0) {
+      const temp = pdfItems[idx - 1];
+      pdfItems[idx - 1] = pdfItems[idx];
+      pdfItems[idx] = temp;
+      renderList();
+    }
+  });
+
+  $(document).on("click", ".move-down", function () {
+    const idx = parseInt($(this).data("idx"), 10);
+    if (idx >= 0 && idx < pdfItems.length - 1) {
+      const temp = pdfItems[idx + 1];
+      pdfItems[idx + 1] = pdfItems[idx];
+      pdfItems[idx] = temp;
+      renderList();
+    }
+  });
+
+  $(document).on("click", ".remove-pdf", function () {
+    const idx = parseInt($(this).data("idx"), 10);
+    if (idx >= 0 && idx < pdfItems.length) {
+      pdfItems.splice(idx, 1);
+      renderList();
+      showToast("Removed PDF from queue");
+    }
+  });
+
+  $("#clearBtn").on("click", function () {
+    pdfItems.length = 0;
+    renderList();
+    showToast("Cleared PDF list");
+  });
+
+  $("#mergeBtn").on("click", async function () {
+    if (pdfItems.length < 2) return;
+    if (!window.PDFLib || !window.PDFLib.PDFDocument) {
+      showToast("PDF library not available.");
+      return;
+    }
+
+    try {
+      $("#mergeBtn").prop("disabled", true).text("Merging...");
+      const { PDFDocument } = window.PDFLib;
+      const mergedPdf = await PDFDocument.create();
+
+      for (const item of pdfItems) {
+        const srcDoc = await PDFDocument.load(item.bytes);
+        const pageIndices = srcDoc.getPageIndices();
+        const copiedPages = await mergedPdf.copyPages(srcDoc, pageIndices);
+        copiedPages.forEach(function (page) {
+          mergedPdf.addPage(page);
+        });
+      }
+
+      const mergedBytes = await mergedPdf.save();
+      const blob = new Blob([mergedBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      let rawName = ($("#outFileName").val() || "merged-document").trim();
+      rawName = rawName.replace(/\.pdf$/i, "").replace(/[^a-zA-Z0-9._-]+/g, "-") || "merged-document";
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = rawName + ".pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+
+      showToast("Merged PDF downloaded (" + rawName + ".pdf)");
+    } catch (err) {
+      showToast("Error merging PDFs.");
+    } finally {
+      $("#mergeBtn").text("Merge & Download PDF").prop("disabled", pdfItems.length < 2);
+    }
+  });
+});
+</script>
+</body>
+</html>
