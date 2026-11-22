@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Image Cropper — Free Crop, Aspect Ratios, Circle &amp; Rotation</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --g4:#9E9E9E;--surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1060px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 315px;gap:16px;align-items:start}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.stage-wrap{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:300px;position:relative}
+.stage{position:relative;display:inline-block;max-width:100%;touch-action:none}
+#cropCanvas{display:block;max-width:100%;max-height:460px;width:auto;height:auto;
+  border:1px solid var(--brd);background:#111}
+.crop-box{position:absolute;border:2px solid #86BC25;box-shadow:0 0 0 9999px rgba(0,0,0,.45);
+  cursor:move;display:none}
+.crop-box.circle{border-radius:50%}
+.handle{position:absolute;width:12px;height:12px;background:#86BC25;border:2px solid #fff;
+  border-radius:2px}
+.h-nw{top:-6px;left:-6px;cursor:nwse-resize}
+.h-ne{top:-6px;right:-6px;cursor:nesw-resize}
+.h-sw{bottom:-6px;left:-6px;cursor:nesw-resize}
+.h-se{bottom:-6px;right:-6px;cursor:nwse-resize}
+.meta{margin-top:10px;font-size:.72rem;color:var(--txt2);text-align:center;line-height:1.5}
+.meta strong{color:var(--txt)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.ratios{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rbtn{background:var(--surf2);color:var(--txt2);border:2px solid var(--brd);border-radius:7px;
+  padding:7px 4px;font-family:var(--ff);font-size:.72rem;font-weight:700;cursor:pointer;text-align:center}
+.rbtn:hover{border-color:var(--g);color:var(--txt)}
+.rbtn.on{border-color:var(--g);background:rgba(134,188,37,.12);color:var(--txt)}
+.rot-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.field select,.field input[type="color"]{width:100%;padding:7px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.field input[type="color"]{height:38px;padding:3px 6px;cursor:pointer}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 12px;font-family:var(--ff);font-size:.78rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Personal <em>| Image Cropper</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #7 — Image Cropper (Free, Aspect Ratio, Circle &amp; Rotation)</h2></div>
+    <div class="cbody">
+      <p class="note">Upload an image, rotate if needed, drag the green crop frame or corner handles to select your region, and download the cropped result locally.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp"/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop an image to crop</div>
+            <div class="dz-sub">JPG, PNG or WEBP &middot; Client-side cropping only</div>
+          </div>
+
+          <div class="stage-wrap">
+            <div class="stage" id="stage">
+              <canvas id="cropCanvas" width="480" height="320"></canvas>
+              <div class="crop-box" id="cropBox">
+                <div class="handle h-nw" data-handle="nw"></div>
+                <div class="handle h-ne" data-handle="ne"></div>
+                <div class="handle h-sw" data-handle="sw"></div>
+                <div class="handle h-se" data-handle="se"></div>
+              </div>
+            </div>
+            <div class="meta" id="cropMeta">
+              Upload an image to start cropping &middot; Crop Size: <strong id="cropSizeText">—</strong>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="downloadBtn" disabled>Download Cropped Image</button>
+            <button type="button" class="bs" id="resetCropBtn" disabled>Reset Crop Box</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label>Aspect Ratio / Shape</label>
+            <div class="ratios" id="ratioGroup">
+              <button type="button" class="rbtn on" data-ratio="free" data-circle="0">Free</button>
+              <button type="button" class="rbtn" data-ratio="1" data-circle="0">1:1</button>
+              <button type="button" class="rbtn" data-ratio="1.3333" data-circle="0">4:3</button>
+              <button type="button" class="rbtn" data-ratio="1.5" data-circle="0">3:2</button>
+              <button type="button" class="rbtn" data-ratio="1.7778" data-circle="0">16:9</button>
+              <button type="button" class="rbtn" data-ratio="1" data-circle="1">Circle</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Rotate Image (<span id="rotVal">0&deg;</span>)</label>
+            <div class="rot-row">
+              <button type="button" class="bs" id="rotLeftBtn" disabled>&circlearrowleft; Rotate 90&deg; Left</button>
+              <button type="button" class="bs" id="rotRightBtn" disabled>&circlearrowright; Rotate 90&deg; Right</button>
+            </div>
+          </div>
+
+          <div class="field" id="cornerBgWrap" style="display:none">
+            <label for="cornerBgColor">Circle Corner Fill (for JPG)</label>
+            <input type="color" id="cornerBgColor" value="#ffffff"/>
+          </div>
+
+          <div class="field">
+            <label for="fmtSelect">Output Format</label>
+            <select id="fmtSelect">
+              <option value="image/png" selected>PNG (.png)</option>
+              <option value="image/jpeg">JPG (.jpg)</option>
+              <option value="image/webp">WEBP (.webp)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let srcImg = null;
+  let rotationDeg = 0;
+  let baseName = "cropped";
+  let aspectRatio = null;
+  let isCircle = false;
+  let cropRect = { x: 0, y: 0, w: 0, h: 0 };
+  let dragState = null;
+  let toastTimer = null;
+
+  const canvas = document.getElementById("cropCanvas");
+  const ctx = canvas.getContext("2d");
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function drawRotatedSource() {
+    if (!srcImg) return;
+    const deg = ((rotationDeg % 360) + 360) % 360;
+    const swap = deg === 90 || deg === 270;
+    const w = swap ? srcImg.height : srcImg.width;
+    const h = swap ? srcImg.width : srcImg.height;
+
+    canvas.width = w;
+    canvas.height = h;
+    ctx.save();
+    ctx.clearRect(0, 0, w, h);
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate((deg * Math.PI) / 180);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(srcImg, -srcImg.width / 2, -srcImg.height / 2);
+    ctx.restore();
+    $("#rotVal").html(deg + "&deg;");
+  }
+
+  function initCropBox() {
+    if (!srcImg || !canvas.width || !canvas.height) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    let cw = Math.round(w * 0.7);
+    let ch = Math.round(h * 0.7);
+
+    if (aspectRatio) {
+      if (cw / ch > aspectRatio) {
+        cw = Math.round(ch * aspectRatio);
+      } else {
+        ch = Math.round(cw / aspectRatio);
+      }
+    }
+    cw = Math.max(24, Math.min(w, cw));
+    ch = Math.max(24, Math.min(h, ch));
+
+    cropRect = {
+      x: Math.round((w - cw) / 2),
+      y: Math.round((h - ch) / 2),
+      w: cw,
+      h: ch
+    };
+    syncCropOverlay();
+  }
+
+  function syncCropOverlay() {
+    if (!srcImg || !canvas.width || !canvas.height) {
+      $("#cropBox").hide();
+      $("#cropSizeText").text("—");
+      return;
+    }
+    const dispW = canvas.getBoundingClientRect().width || canvas.width;
+    const dispH = canvas.getBoundingClientRect().height || canvas.height;
+    const sx = dispW / canvas.width;
+    const sy = dispH / canvas.height;
+
+    $("#cropBox")
+      .show()
+      .toggleClass("circle", isCircle)
+      .css({
+        left: (cropRect.x * sx) + "px",
+        top: (cropRect.y * sy) + "px",
+        width: (cropRect.w * sx) + "px",
+        height: (cropRect.h * sy) + "px"
+      });
+
+    $("#cropSizeText").text(Math.round(cropRect.w) + " × " + Math.round(cropRect.h) + " px");
+  }
+
+  function loadFile(file) {
+    if (!file || !/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+      showToast("Please upload a JPG, PNG, or WEBP image.");
+      return;
+    }
+    baseName = (file.name || "image").replace(/\.[^.]+$/, "");
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const img = new Image();
+      img.onload = function () {
+        srcImg = img;
+        rotationDeg = 0;
+        drawRotatedSource();
+        initCropBox();
+        $("#downloadBtn, #resetCropBtn, #rotLeftBtn, #rotRightBtn").prop("disabled", false);
+        showToast("Loaded image (" + img.width + "×" + img.height + " px)");
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function pointerToCanvas(e) {
+    const t = e.touches && e.touches[0] ? e.touches[0] : e;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((t.clientX - rect.left) / (rect.width || 1)) * canvas.width;
+    const y = ((t.clientY - rect.top) / (rect.height || 1)) * canvas.height;
+    return { x: x, y: y };
+  }
+
+  $("#cropBox").on("mousedown touchstart", function (e) {
+    if (!srcImg) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const pt = pointerToCanvas(e);
+    const handle = $(e.target).data("handle") || "move";
+    dragState = {
+      type: handle,
+      startX: pt.x,
+      startY: pt.y,
+      orig: { x: cropRect.x, y: cropRect.y, w: cropRect.w, h: cropRect.h }
+    };
+  });
+
+  $(document).on("mousemove touchmove", function (e) {
+    if (!dragState || !srcImg) return;
+    const pt = pointerToCanvas(e);
+    const dx = pt.x - dragState.startX;
+    const dy = pt.y - dragState.startY;
+    const maxW = canvas.width;
+    const maxH = canvas.height;
+    const minSize = 24;
+    const o = dragState.orig;
+
+    if (dragState.type === "move") {
+      cropRect.x = Math.max(0, Math.min(maxW - o.w, o.x + dx));
+      cropRect.y = Math.max(0, Math.min(maxH - o.h, o.y + dy));
+    } else {
+      let x1 = o.x;
+      let y1 = o.y;
+      let x2 = o.x + o.w;
+      let y2 = o.y + o.h;
+
+      if (dragState.type.indexOf("w") !== -1) x1 = Math.max(0, Math.min(x2 - minSize, o.x + dx));
+      if (dragState.type.indexOf("e") !== -1) x2 = Math.min(maxW, Math.max(x1 + minSize, o.x + o.w + dx));
+      if (dragState.type.indexOf("n") !== -1) y1 = Math.max(0, Math.min(y2 - minSize, o.y + dy));
+      if (dragState.type.indexOf("s") !== -1) y2 = Math.min(maxH, Math.max(y1 + minSize, o.y + o.h + dy));
+
+      let nw = x2 - x1;
+      let nh = y2 - y1;
+
+      if (aspectRatio) {
+        if (nw / nh > aspectRatio) {
+          nw = nh * aspectRatio;
+        } else {
+          nh = nw / aspectRatio;
+        }
+        if (dragState.type.indexOf("w") !== -1) x1 = Math.max(0, x2 - nw);
+        if (dragState.type.indexOf("n") !== -1) y1 = Math.max(0, y2 - nh);
+        nw = Math.min(nw, maxW - x1);
+        nh = Math.min(nh, maxH - y1);
+      }
+
+      cropRect = { x: x1, y: y1, w: Math.max(minSize, nw), h: Math.max(minSize, nh) };
+    }
+    syncCropOverlay();
+  });
+
+  $(document).on("mouseup touchend", function () {
+    dragState = null;
+  });
+
+  $(window).on("resize", syncCropOverlay);
+
+  $(".rbtn").on("click", function () {
+    $(".rbtn").removeClass("on");
+    $(this).addClass("on");
+    const rVal = $(this).data("ratio");
+    aspectRatio = rVal === "free" ? null : parseFloat(rVal);
+    isCircle = $(this).data("circle") === 1 || $(this).data("circle") === "1";
+    $("#cornerBgWrap").toggle(isCircle);
+    initCropBox();
+  });
+
+  $("#rotLeftBtn").on("click", function () {
+    if (!srcImg) return;
+    rotationDeg = (rotationDeg - 90 + 360) % 360;
+    drawRotatedSource();
+    initCropBox();
+  });
+
+  $("#rotRightBtn").on("click", function () {
+    if (!srcImg) return;
+    rotationDeg = (rotationDeg + 90) % 360;
+    drawRotatedSource();
+    initCropBox();
+  });
+
+  $("#resetCropBtn").on("click", function () {
+    initCropBox();
+    showToast("Reset crop box");
+  });
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files[0]) loadFile(dt.files[0]);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files[0]) loadFile(this.files[0]);
+  });
+
+  $("#downloadBtn").on("click", function () {
+    if (!srcImg) return;
+    const outW = Math.max(1, Math.round(cropRect.w));
+    const outH = Math.max(1, Math.round(cropRect.h));
+    const outCanvas = document.createElement("canvas");
+    outCanvas.width = outW;
+    outCanvas.height = outH;
+    const octx = outCanvas.getContext("2d");
+
+    const mime = $("#fmtSelect").val();
+    if (mime === "image/jpeg" || isCircle) {
+      if (mime === "image/jpeg") {
+        octx.fillStyle = $("#cornerBgColor").val() || "#ffffff";
+        octx.fillRect(0, 0, outW, outH);
+      }
+    }
+
+    octx.save();
+    if (isCircle) {
+      octx.beginPath();
+      octx.ellipse(outW / 2, outH / 2, outW / 2, outH / 2, 0, 0, Math.PI * 2);
+      octx.clip();
+    }
+    octx.drawImage(
+      canvas,
+      Math.round(cropRect.x),
+      Math.round(cropRect.y),
+      outW,
+      outH,
+      0,
+      0,
+      outW,
+      outH
+    );
+    octx.restore();
+
+    const ext = mime === "image/jpeg" ? ".jpg" : mime === "image/webp" ? ".webp" : ".png";
+    const url = mime === "image/png" ? outCanvas.toDataURL("image/png") : outCanvas.toDataURL(mime, 0.92);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = baseName + "-cropped" + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("Downloaded cropped image");
+  });
+});
+</script>
+</body>
+</html>
