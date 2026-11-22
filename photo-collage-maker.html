@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Photo Collage Maker — 2, 4, 6, 9 &amp; 12 Photo Grids</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --g4:#9E9E9E;--surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1040px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.preview-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;text-align:center;min-height:280px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+#collageCanvas{max-width:100%;max-height:460px;height:auto;border:1px solid var(--brd);
+  background:#fff;cursor:pointer}
+.meta{margin-top:10px;font-size:.73rem;color:var(--txt2);line-height:1.5}
+.meta strong{color:var(--txt)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.layouts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.lbtn{background:var(--surf2);color:var(--txt2);border:2px solid var(--brd);border-radius:7px;
+  padding:8px 4px;font-family:var(--ff);font-size:.74rem;font-weight:700;cursor:pointer;text-align:center}
+.lbtn:hover{border-color:var(--g);color:var(--txt)}
+.lbtn.on{border-color:var(--g);background:rgba(134,188,37,.12);color:var(--txt)}
+.field input[type="range"]{width:100%;accent-color:var(--g);cursor:pointer}
+.field select,.field input[type="color"]{width:100%;padding:7px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.field input[type="color"]{height:38px;padding:3px 6px;cursor:pointer}
+#fileInput{display:none}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Personal <em>| Photo Collage Maker</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #5 — Photo Collage Maker (2, 4, 6, 9 &amp; 12 Photo Grids)</h2></div>
+    <div class="cbody">
+      <p class="note">Choose a grid layout, upload photos into slots (or click any slot on the preview to load/replace a photo), customize border size and color, and download your collage locally.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple/>
+
+          <div class="preview-box">
+            <canvas id="collageCanvas" width="900" height="900"></canvas>
+            <div class="meta" id="collageMeta">
+              Active Slot: <strong>#1</strong> &middot; Click a slot to select/upload, or click <strong>Add Photos</strong>.
+            </div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="uploadBtn">Add / Fill Photos</button>
+            <button type="button" class="bp" id="downloadBtn">Download Collage</button>
+            <button type="button" class="bs" id="clearSlotBtn">Clear Selected Slot</button>
+            <button type="button" class="bs" id="clearAllBtn">Clear All</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label>Photo Count Layout</label>
+            <div class="layouts" id="layoutGroup">
+              <button type="button" class="lbtn" data-count="2">2</button>
+              <button type="button" class="lbtn on" data-count="4">4</button>
+              <button type="button" class="lbtn" data-count="6">6</button>
+              <button type="button" class="lbtn" data-count="9">9</button>
+              <button type="button" class="lbtn" data-count="12">12</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="borderRange">Border / Gap Width (<span id="borderVal">16 px</span>)</label>
+            <input type="range" id="borderRange" min="0" max="60" step="2" value="16"/>
+          </div>
+
+          <div class="field">
+            <label for="borderColor">Border Color</label>
+            <input type="color" id="borderColor" value="#ffffff"/>
+          </div>
+
+          <div class="field">
+            <label for="fmtSelect">Output Format</label>
+            <select id="fmtSelect">
+              <option value="image/jpeg" selected>JPG (.jpg)</option>
+              <option value="image/png">PNG (.png)</option>
+              <option value="image/webp">WEBP (.webp)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  const LAYOUTS = {
+    2:  { cols: 2, rows: 1, w: 1200, h: 640 },
+    4:  { cols: 2, rows: 2, w: 1000, h: 1000 },
+    6:  { cols: 3, rows: 2, w: 1200, h: 820 },
+    9:  { cols: 3, rows: 3, w: 1080, h: 1080 },
+    12: { cols: 4, rows: 3, w: 1280, h: 960 }
+  };
+
+  let slotCount = 4;
+  let activeSlot = 0;
+  let slots = new Array(12).fill(null);
+  let slotRects = [];
+  let replaceMode = false;
+  let toastTimer = null;
+
+  const canvas = document.getElementById("collageCanvas");
+  const ctx = canvas.getContext("2d");
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function computeRects(count, w, h, gap) {
+    const cfg = LAYOUTS[count] || LAYOUTS[4];
+    const cols = cfg.cols;
+    const rows = cfg.rows;
+    const availW = w - gap * (cols + 1);
+    const availH = h - gap * (rows + 1);
+    const cellW = Math.max(20, availW / cols);
+    const cellH = Math.max(20, availH / rows);
+    const rects = [];
+
+    for (let i = 0; i < count; i++) {
+      const r = Math.floor(i / cols);
+      const c = i % cols;
+      rects.push({
+        index: i,
+        x: Math.round(gap + c * (cellW + gap)),
+        y: Math.round(gap + r * (cellH + gap)),
+        w: Math.round(cellW),
+        h: Math.round(cellH)
+      });
+    }
+    return rects;
+  }
+
+  function renderCollage() {
+    const cfg = LAYOUTS[slotCount] || LAYOUTS[4];
+    const gap = parseInt($("#borderRange").val(), 10);
+    const borderHex = $("#borderColor").val() || "#ffffff";
+    $("#borderVal").text(gap + " px");
+
+    canvas.width = cfg.w;
+    canvas.height = cfg.h;
+
+    ctx.fillStyle = borderHex;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    slotRects = computeRects(slotCount, canvas.width, canvas.height, gap);
+
+    slotRects.forEach(function (rect, idx) {
+      const img = slots[idx];
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rect.x, rect.y, rect.w, rect.h);
+      ctx.clip();
+
+      if (img) {
+        const scale = Math.max(rect.w / img.width, rect.h / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        const dx = rect.x + (rect.w - dw) / 2;
+        const dy = rect.y + (rect.h - dh) / 2;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, dx, dy, dw, dh);
+      } else {
+        ctx.fillStyle = "#EAEAEA";
+        ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+        ctx.fillStyle = "#666666";
+        ctx.font = "700 22px Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Slot #" + (idx + 1) + " (Click to add)", rect.x + rect.w / 2, rect.y + rect.h / 2);
+      }
+
+      if (idx === activeSlot) {
+        ctx.strokeStyle = "#86BC25";
+        ctx.lineWidth = 6;
+        ctx.strokeRect(rect.x + 3, rect.y + 3, Math.max(0, rect.w - 6), Math.max(0, rect.h - 6));
+      }
+      ctx.restore();
+    });
+
+    const filledCount = slots.slice(0, slotCount).filter(Boolean).length;
+    $("#collageMeta").html(
+      "Active Slot: <strong>#" + (activeSlot + 1) + "</strong> &middot; " +
+      "Filled: <strong>" + filledCount + " / " + slotCount + "</strong> &middot; " +
+      "Canvas: <strong>" + canvas.width + "&times;" + canvas.height + " px</strong>"
+    );
+  }
+
+  function loadFilesIntoSlots(fileList, targetIndex) {
+    if (!fileList || !fileList.length) return;
+    const validFiles = Array.from(fileList).filter(function (f) {
+      return /^image\/(jpeg|png|webp)$/i.test(f.type);
+    });
+    if (!validFiles.length) {
+      showToast("Please choose JPG, PNG, or WEBP images.");
+      return;
+    }
+
+    let cursor = targetIndex;
+    validFiles.forEach(function (file) {
+      while (cursor < slotCount && slots[cursor] && validFiles.length > 1) {
+        cursor++;
+      }
+      if (cursor >= slotCount) return;
+      const currentSlot = cursor;
+      cursor++;
+
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        const img = new Image();
+        img.onload = function () {
+          slots[currentSlot] = img;
+          activeSlot = currentSlot;
+          renderCollage();
+          showToast("Loaded photo into Slot #" + (currentSlot + 1));
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  $("#collageCanvas").on("click", function (e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = rect.width ? (canvas.width / rect.width) : 1;
+    const scaleY = rect.height ? (canvas.height / rect.height) : 1;
+    const cx = (e.clientX - rect.left) * scaleX;
+    const cy = (e.clientY - rect.top) * scaleY;
+
+    for (let i = 0; i < slotRects.length; i++) {
+      const r = slotRects[i];
+      if (cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h) {
+        activeSlot = i;
+        renderCollage();
+        if (!slots[i]) {
+          replaceMode = true;
+          $("#fileInput").prop("multiple", false).trigger("click");
+        } else {
+          showToast("Selected Slot #" + (i + 1) + " (click 'Add / Fill Photos' to replace)");
+        }
+        return;
+      }
+    }
+  });
+
+  $("#uploadBtn").on("click", function () {
+    replaceMode = false;
+    $("#fileInput").prop("multiple", true).trigger("click");
+  });
+
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files.length) {
+      const startSlot = replaceMode ? activeSlot : (slots[activeSlot] ? 0 : activeSlot);
+      loadFilesIntoSlots(this.files, startSlot);
+      $(this).val("");
+    }
+  });
+
+  $(".lbtn").on("click", function () {
+    $(".lbtn").removeClass("on");
+    $(this).addClass("on");
+    slotCount = parseInt($(this).data("count"), 10) || 4;
+    if (activeSlot >= slotCount) activeSlot = 0;
+    renderCollage();
+  });
+
+  $("#borderRange, #borderColor").on("change input", renderCollage);
+
+  $("#clearSlotBtn").on("click", function () {
+    slots[activeSlot] = null;
+    renderCollage();
+    showToast("Cleared Slot #" + (activeSlot + 1));
+  });
+
+  $("#clearAllBtn").on("click", function () {
+    slots = new Array(12).fill(null);
+    activeSlot = 0;
+    renderCollage();
+    showToast("Cleared all collage slots");
+  });
+
+  $("#downloadBtn").on("click", function () {
+    const mime = $("#fmtSelect").val();
+    const ext = mime === "image/png" ? ".png" : mime === "image/webp" ? ".webp" : ".jpg";
+    const url = mime === "image/png" ? canvas.toDataURL("image/png") : canvas.toDataURL(mime, 0.92);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "collage-" + slotCount + "-photos" + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("Downloaded collage");
+  });
+
+  renderCollage();
+});
+</script>
+</body>
+</html>

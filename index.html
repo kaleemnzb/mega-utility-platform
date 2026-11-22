@@ -781,15 +781,19 @@
         const action = $(this).data("action");
         const toolName = $(this).data("name");
 
-        if (action === "passport") {
-      window.location.href = "passport-photo-studio.html";
-    } else if (toolName === "Photo & Signature Resizer") {
-      window.location.href = "photo-signature-resizer.html";
-    } else if (toolName === "Image Compressor") {
-      window.location.href = "image-compressor.html";
-    } else {
-      alert(toolName + " - Ready to build next in our modular HTML/jQuery structure!");
-    }
+      if (action === "passport") {
+          window.location.href = "passport-photo-studio.html";
+        } else if (toolName === "Photo & Signature Resizer") {
+          window.location.href = "photo-signature-resizer.html";
+        } else if (toolName === "Image Compressor") {
+          window.location.href = "image-compressor.html";
+        } else if (toolName === "Image Format Converter") {
+          window.location.href = "image-format-converter.html";
+        } else if (toolName === "Photo Collage Maker") {
+          window.location.href = "photo-collage-maker.html";
+        } else {
+          alert(toolName + " - Ready to build next in our modular HTML/jQuery structure!");
+        }
       });
 
       // 3. Flagship Passport Photo Maker Canvas Engine
