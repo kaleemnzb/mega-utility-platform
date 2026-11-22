@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Photo Background Changer — White, Blue &amp; Custom Background</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --g4:#9E9E9E;--surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1060px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 325px;gap:16px;align-items:start}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.preview-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;text-align:center;min-height:280px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+#bgCanvas{max-width:100%;max-height:440px;height:auto;border:1px solid var(--brd);
+  background:#fff;touch-action:none}
+.meta{margin-top:10px;font-size:.72rem;color:var(--txt2);line-height:1.5}
+.meta strong{color:var(--txt)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.modes,.swatches{display:grid;gap:6px}
+.modes{grid-template-columns:repeat(3,1fr)}
+.swatches{grid-template-columns:repeat(4,1fr)}
+.mbtn,.swbtn{background:var(--surf2);color:var(--txt2);border:2px solid var(--brd);border-radius:7px;
+  padding:7px 5px;font-family:var(--ff);font-size:.7rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:4px}
+.mbtn:hover,.swbtn:hover{border-color:var(--g);color:var(--txt)}
+.mbtn.on,.swbtn.on{border-color:var(--g);background:rgba(134,188,37,.12);color:var(--txt)}
+.chip{width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.25);flex-shrink:0}
+.field input[type="range"]{width:100%;accent-color:var(--g);cursor:pointer}
+.field select,.field input[type="color"]{width:100%;padding:7px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.field input[type="color"]{height:38px;padding:3px 6px;cursor:pointer}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 12px;font-family:var(--ff);font-size:.78rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Personal <em>| Background Changer</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #6 — Photo Background Changer (White, Blue &amp; Custom)</h2></div>
+    <div class="cbody">
+      <p class="note">Use <strong>Sample BG</strong> to pick background color, <strong>Keep Photo</strong> brush to restore areas like a white shirt that matched the background, and <strong>Remove BG</strong> brush to clean up leftover background spots.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp"/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop a photo</div>
+            <div class="dz-sub">JPG, PNG or WEBP &middot; Local processing only</div>
+          </div>
+
+          <div class="preview-box">
+            <canvas id="bgCanvas" width="480" height="320"></canvas>
+            <div class="meta" id="bgMeta">
+              Sampled BG: <strong id="sampleHex">#FFFFFF</strong> &middot; Active Tool: <strong id="activeToolLabel">Sample BG</strong>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="downloadBtn" disabled>Download Result</button>
+            <button type="button" class="bs" id="clearEditsBtn" disabled>Clear Brush Edits</button>
+            <button type="button" class="bs" id="resetBtn" disabled>Reset All</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label>Canvas Interaction Mode</label>
+            <div class="modes" id="modeGroup">
+              <button type="button" class="mbtn on" data-mode="sample">Sample BG</button>
+              <button type="button" class="mbtn" data-mode="keep">Keep Photo</button>
+              <button type="button" class="mbtn" data-mode="remove">Remove BG</button>
+            </div>
+          </div>
+
+          <div class="field" id="brushSizeWrap" style="display:none">
+            <label for="brushRange">Brush Size (<span id="brushVal">24 px</span>)</label>
+            <input type="range" id="brushRange" min="6" max="80" step="2" value="24"/>
+          </div>
+
+          <div class="field">
+            <label>Replacement Background</label>
+            <div class="swatches" id="bgPresets">
+              <button type="button" class="swbtn on" data-bgmode="color" data-val="#ffffff"><span class="chip" style="background:#ffffff"></span>White</button>
+              <button type="button" class="swbtn" data-bgmode="color" data-val="#1e6bb8"><span class="chip" style="background:#1e6bb8"></span>Blue</button>
+              <button type="button" class="swbtn" data-bgmode="color" data-val="#5ba4e5"><span class="chip" style="background:#5ba4e5"></span>Sky</button>
+              <button type="button" class="swbtn" data-bgmode="transparent" data-val=""><span class="chip" style="background:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%)"></span>Clear</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="customBgColor">Custom Background Color</label>
+            <input type="color" id="customBgColor" value="#ffffff"/>
+          </div>
+
+          <div class="field">
+            <label for="tolRange">Color Tolerance (<span id="tolVal">24</span>)</label>
+            <input type="range" id="tolRange" min="5" max="120" step="1" value="24"/>
+          </div>
+
+          <div class="field">
+            <label for="softRange">Edge Softness (<span id="softVal">10</span>)</label>
+            <input type="range" id="softRange" min="0" max="35" step="1" value="10"/>
+          </div>
+
+          <div class="field">
+            <label for="fmtSelect">Output Format</label>
+            <select id="fmtSelect">
+              <option value="image/jpeg" selected>JPG (.jpg)</option>
+              <option value="image/png">PNG (.png — supports clear BG)</option>
+              <option value="image/webp">WEBP (.webp)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let srcImg = null;
+  let origData = null;
+  let forceKeepMask = null;
+  let forceRemoveMask = null;
+  let sampleRgb = [255, 255, 255];
+  let toolMode = "sample";
+  let bgMode = "color";
+  let bgHex = "#ffffff";
+  let baseName = "bg-changed";
+  let isPainting = false;
+  let toastTimer = null;
+
+  const canvas = document.getElementById("bgCanvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const workCanvas = document.createElement("canvas");
+  const workCtx = workCanvas.getContext("2d", { willReadFrequently: true });
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function rgbToHex(r, g, b) {
+    return "#" + [r, g, b].map(function (v) {
+      return Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+    }).join("").toUpperCase();
+  }
+
+  function hexToRgb(hex) {
+    const clean = (hex || "#ffffff").replace("#", "");
+    const full = clean.length === 3
+      ? clean.split("").map(function (c) { return c + c; }).join("")
+      : clean.padEnd(6, "0").slice(0, 6);
+    const num = parseInt(full, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+  }
+
+  function colorDist(r1, g1, b1, r2, g2, b2) {
+    return Math.sqrt((r1 - r2) * (r1 - r2) + (g1 - g2) * (g1 - g2) + (b1 - b2) * (b1 - b2));
+  }
+
+  function canvasCoords(e) {
+    const clientX = e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches && e.touches[0] ? e.touches[0].clientY : e.clientY;
+    const rect = canvas.getBoundingClientRect();
+    const px = Math.max(0, Math.min(canvas.width - 1, Math.floor(((clientX - rect.left) / rect.width) * canvas.width)));
+    const py = Math.max(0, Math.min(canvas.height - 1, Math.floor(((clientY - rect.top) / rect.height) * canvas.height)));
+    return { px: px, py: py };
+  }
+
+  function applyBrushAt(px, py) {
+    if (!origData || !forceKeepMask || !forceRemoveMask) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    const radius = parseInt($("#brushRange").val(), 10) || 24;
+    const r2 = radius * radius;
+    const minX = Math.max(0, px - radius);
+    const maxX = Math.min(w - 1, px + radius);
+    const minY = Math.max(0, py - radius);
+    const maxY = Math.min(h - 1, py + radius);
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const dx = x - px;
+        const dy = y - py;
+        if (dx * dx + dy * dy <= r2) {
+          const idx = y * w + x;
+          if (toolMode === "keep") {
+            forceKeepMask[idx] = 1;
+            forceRemoveMask[idx] = 0;
+          } else if (toolMode === "remove") {
+            forceRemoveMask[idx] = 1;
+            forceKeepMask[idx] = 0;
+          }
+        }
+      }
+    }
+    processImage();
+  }
+
+  function processImage() {
+    if (!srcImg || !origData) return;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const tol = parseInt($("#tolRange").val(), 10) || 24;
+    const soft = parseInt($("#softRange").val(), 10) || 10;
+    const brushPx = parseInt($("#brushRange").val(), 10) || 24;
+
+    $("#tolVal").text(tol);
+    $("#softVal").text(soft);
+    $("#brushVal").text(brushPx + " px");
+    $("#sampleHex").text(rgbToHex(sampleRgb[0], sampleRgb[1], sampleRgb[2]));
+
+    const srcArr = origData.data;
+    const outImg = ctx.createImageData(w, h);
+    const outArr = outImg.data;
+    outArr.set(srcArr);
+
+    const bgStrength = new Float32Array(w * h);
+    const visited = new Uint8Array(w * h);
+    const queue = new Int32Array(w * h);
+    let head = 0;
+    let tail = 0;
+    const outerLimit = tol + soft;
+
+    function tryPush(px, py) {
+      if (px < 0 || py < 0 || px >= w || py >= h) return;
+      const idx = py * w + px;
+      if (visited[idx]) return;
+      if (forceKeepMask && forceKeepMask[idx]) return;
+      const off = idx * 4;
+      const dist = colorDist(
+        srcArr[off], srcArr[off + 1], srcArr[off + 2],
+        sampleRgb[0], sampleRgb[1], sampleRgb[2]
+      );
+      if (dist <= outerLimit) {
+        visited[idx] = 1;
+        queue[tail++] = idx;
+        if (dist <= tol) {
+          bgStrength[idx] = 1;
+        } else if (soft > 0) {
+          bgStrength[idx] = 1 - ((dist - tol) / soft);
+        }
+      }
+    }
+
+    for (let x = 0; x < w; x++) {
+      tryPush(x, 0);
+      tryPush(x, h - 1);
+    }
+    for (let y = 0; y < h; y++) {
+      tryPush(0, y);
+      tryPush(w - 1, y);
+    }
+
+    while (head < tail) {
+      const idx = queue[head++];
+      const x = idx % w;
+      const y = (idx - x) / w;
+      if (x + 1 < w) tryPush(x + 1, y);
+      if (x - 1 >= 0) tryPush(x - 1, y);
+      if (y + 1 < h) tryPush(x, y + 1);
+      if (y - 1 >= 0) tryPush(x, y - 1);
+    }
+
+    const useTransparent = bgMode === "transparent" && $("#fmtSelect").val() !== "image/jpeg";
+    const fillRgb = hexToRgb(bgHex);
+
+    for (let i = 0; i < w * h; i++) {
+      let s = bgStrength[i];
+      if (forceRemoveMask && forceRemoveMask[i]) s = 1;
+      if (forceKeepMask && forceKeepMask[i]) s = 0;
+      if (s <= 0) continue;
+
+      const off = i * 4;
+      if (useTransparent) {
+        const origA = srcArr[off + 3] / 255;
+        outArr[off + 3] = Math.round(origA * (1 - s) * 255);
+      } else {
+        outArr[off] = Math.round(srcArr[off] * (1 - s) + fillRgb[0] * s);
+        outArr[off + 1] = Math.round(srcArr[off + 1] * (1 - s) + fillRgb[1] * s);
+        outArr[off + 2] = Math.round(srcArr[off + 2] * (1 - s) + fillRgb[2] * s);
+        outArr[off + 3] = srcArr[off + 3];
+      }
+    }
+
+    ctx.putImageData(outImg, 0, 0);
+  }
+
+  function loadFile(file) {
+    if (!file || !/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+      showToast("Please upload a JPG, PNG, or WEBP image.");
+      return;
+    }
+    baseName = (file.name || "photo").replace(/\.[^.]+$/, "");
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const img = new Image();
+      img.onload = function () {
+        srcImg = img;
+        const maxDim = 1200;
+        let w = img.width;
+        let h = img.height;
+        if (Math.max(w, h) > maxDim) {
+          const s = maxDim / Math.max(w, h);
+          w = Math.round(w * s);
+          h = Math.round(h * s);
+        }
+        canvas.width = w;
+        canvas.height = h;
+        workCanvas.width = w;
+        workCanvas.height = h;
+        workCtx.clearRect(0, 0, w, h);
+        workCtx.drawImage(img, 0, 0, w, h);
+        origData = workCtx.getImageData(0, 0, w, h);
+        forceKeepMask = new Uint8Array(w * h);
+        forceRemoveMask = new Uint8Array(w * h);
+        sampleRgb = [origData.data[0], origData.data[1], origData.data[2]];
+        $("#downloadBtn, #clearEditsBtn, #resetBtn").prop("disabled", false);
+        processImage();
+        showToast("Photo loaded (" + w + "×" + h + " px)");
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  $(".mbtn").on("click", function () {
+    $(".mbtn").removeClass("on");
+    $(this).addClass("on");
+    toolMode = $(this).data("mode");
+    $("#brushSizeWrap").toggle(toolMode === "keep" || toolMode === "remove");
+    const labelMap = { sample: "Sample BG", keep: "Keep Photo Brush", remove: "Remove BG Brush" };
+    $("#activeToolLabel").text(labelMap[toolMode] || "Sample BG");
+    $("#bgCanvas").css("cursor", toolMode === "sample" ? "crosshair" : "cell");
+  });
+
+  $("#bgCanvas").on("mousedown touchstart", function (e) {
+    if (!origData) return;
+    const pt = canvasCoords(e);
+    if (toolMode === "sample") {
+      const off = (pt.py * canvas.width + pt.px) * 4;
+      sampleRgb = [origData.data[off], origData.data[off + 1], origData.data[off + 2]];
+      processImage();
+      showToast("Sampled background color " + rgbToHex(sampleRgb[0], sampleRgb[1], sampleRgb[2]));
+    } else {
+      isPainting = true;
+      applyBrushAt(pt.px, pt.py);
+    }
+  });
+
+  $(document).on("mousemove touchmove", function (e) {
+    if (!isPainting || !origData) return;
+    const pt = canvasCoords(e);
+    applyBrushAt(pt.px, pt.py);
+  });
+
+  $(document).on("mouseup touchend", function () {
+    isPainting = false;
+  });
+
+  $(".swbtn").on("click", function () {
+    $(".swbtn").removeClass("on");
+    $(this).addClass("on");
+    bgMode = $(this).data("bgmode");
+    if (bgMode === "color") {
+      bgHex = $(this).data("val") || "#ffffff";
+      $("#customBgColor").val(bgHex);
+    } else if ($("#fmtSelect").val() === "image/jpeg") {
+      $("#fmtSelect").val("image/png");
+    }
+    processImage();
+  });
+
+  $("#customBgColor").on("input change", function () {
+    $(".swbtn").removeClass("on");
+    bgMode = "color";
+    bgHex = $(this).val();
+    processImage();
+  });
+
+  $("#tolRange, #softRange, #brushRange, #fmtSelect").on("change input", processImage);
+
+  $("#clearEditsBtn").on("click", function () {
+    if (!forceKeepMask || !forceRemoveMask) return;
+    forceKeepMask.fill(0);
+    forceRemoveMask.fill(0);
+    processImage();
+    showToast("Cleared manual brush edits");
+  });
+
+  $("#resetBtn").on("click", function () {
+    if (!origData) return;
+    forceKeepMask.fill(0);
+    forceRemoveMask.fill(0);
+    sampleRgb = [origData.data[0], origData.data[1], origData.data[2]];
+    $("#tolRange").val(24);
+    $("#softRange").val(10);
+    $("#brushRange").val(24);
+    bgMode = "color";
+    bgHex = "#ffffff";
+    $("#customBgColor").val("#ffffff");
+    $(".swbtn").removeClass("on").first().addClass("on");
+    processImage();
+    showToast("Reset all background settings");
+  });
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files[0]) loadFile(dt.files[0]);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files[0]) loadFile(this.files[0]);
+  });
+
+  $("#downloadBtn").on("click", function () {
+    if (!srcImg) return;
+    const mime = $("#fmtSelect").val();
+    const ext = mime === "image/png" ? ".png" : mime === "image/webp" ? ".webp" : ".jpg";
+    const url = mime === "image/png" ? canvas.toDataURL("image/png") : canvas.toDataURL(mime, 0.92);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = baseName + "-bg" + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("Downloaded updated image");
+  });
+});
+</script>
+</body>
+</html>
