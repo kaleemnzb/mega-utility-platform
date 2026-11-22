@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Photo Contact Sheet Maker — A4, 4×6 &amp; Custom Print Sheets</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --g4:#9E9E9E;--surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1080px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 325px;gap:16px;align-items:start}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.preview-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;text-align:center;min-height:300px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+#sheetCanvas{max-width:100%;max-height:460px;height:auto;border:1px solid var(--brd);background:#fff}
+.meta{margin-top:10px;font-size:.72rem;color:var(--txt2);line-height:1.5}
+.meta strong{color:var(--txt)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pbtn{background:var(--surf2);color:var(--txt2);border:2px solid var(--brd);border-radius:7px;
+  padding:7px 5px;font-family:var(--ff);font-size:.72rem;font-weight:700;cursor:pointer;text-align:center}
+.pbtn:hover{border-color:var(--g);color:var(--txt)}
+.pbtn.on{border-color:var(--g);background:rgba(134,188,37,.12);color:var(--txt)}
+.dim-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field input[type="number"],.field input[type="range"],.field select{
+  width:100%;padding:7px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.field input[type="range"]{padding:0;border:none;background:transparent;accent-color:var(--g);cursor:pointer}
+.chk-row{display:flex;align-items:center;gap:8px;font-size:.74rem;color:var(--txt2);margin-bottom:14px}
+.chk-row input{width:auto}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Personal <em>| Contact Sheet Maker</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #10 — Photo Contact Sheet Maker (A4, 4×6 &amp; Custom Print Sheets)</h2></div>
+    <div class="cbody">
+      <p class="note">Arrange multiple photos onto an A4 sheet, 4×6 photo print sheet, or custom pixel sheet at 300 DPI with optional filenames and multi-page support.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop photos to place on contact sheet</div>
+            <div class="dz-sub">JPG, PNG or WEBP &middot; Add multiple photos at once</div>
+          </div>
+
+          <div class="preview-box">
+            <canvas id="sheetCanvas" width="800" height="1131"></canvas>
+            <div class="meta" id="sheetMeta">
+              Photos: <strong id="photoCountText">0</strong> &middot;
+              Page: <strong id="pageText">1 / 1</strong> &middot;
+              Sheet: <strong id="sheetDimText">2480 × 3508 px</strong>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="downloadPageBtn" disabled>Download Current Sheet</button>
+            <button type="button" class="bs" id="prevPageBtn" disabled>&larr; Prev Sheet</button>
+            <button type="button" class="bs" id="nextPageBtn" disabled>Next Sheet &rarr;</button>
+            <button type="button" class="bs" id="clearPhotosBtn" disabled>Clear Photos</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label>Sheet Preset (300 DPI)</label>
+            <div class="presets" id="sheetPresets">
+              <button type="button" class="pbtn on" data-sheet="a4">A4 (2480×3508)</button>
+              <button type="button" class="pbtn" data-sheet="4x6">4×6 (1200×1800)</button>
+              <button type="button" class="pbtn" data-sheet="custom">Custom PX</button>
+            </div>
+          </div>
+
+          <div class="field" id="customSheetWrap" style="display:none">
+            <label>Custom Sheet Size (Width × Height PX)</label>
+            <div class="dim-row">
+              <input type="number" id="customW" min="200" max="8000" step="10" value="2480"/>
+              <input type="number" id="customH" min="200" max="8000" step="10" value="3508"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Grid Columns &amp; Rows</label>
+            <div class="dim-row">
+              <input type="number" id="colsInput" min="1" max="10" step="1" value="3"/>
+              <input type="number" id="rowsInput" min="1" max="12" step="1" value="4"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="gapSlider">Spacing / Margin (<span id="gapVal">32 px</span>)</label>
+            <input type="range" id="gapSlider" min="4" max="140" step="2" value="32"/>
+          </div>
+
+          <div class="chk-row">
+            <input type="checkbox" id="showLabels" checked/>
+            <label for="showLabels">Show file names below each photo</label>
+          </div>
+
+          <div class="field">
+            <label for="fmtSelect">Output Format</label>
+            <select id="fmtSelect">
+              <option value="image/jpeg" selected>JPG (.jpg)</option>
+              <option value="image/png">PNG (.png)</option>
+              <option value="image/webp">WEBP (.webp)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  const SHEETS = {
+    a4:  { w: 2480, h: 3508 },
+    "4x6": { w: 1200, h: 1800 }
+  };
+
+  let sheetMode = "a4";
+  let photos = [];
+  let currentPage = 0;
+  let toastTimer = null;
+
+  const canvas = document.getElementById("sheetCanvas");
+  const ctx = canvas.getContext("2d");
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function getSheetSize() {
+    if (sheetMode === "custom") {
+      const cw = Math.max(200, Math.min(8000, parseInt($("#customW").val(), 10) || 2480));
+      const ch = Math.max(200, Math.min(8000, parseInt($("#customH").val(), 10) || 3508));
+      return { w: cw, h: ch };
+    }
+    return SHEETS[sheetMode] || SHEETS.a4;
+  }
+
+  function renderSheet() {
+    const size = getSheetSize();
+    const cols = Math.max(1, Math.min(10, parseInt($("#colsInput").val(), 10) || 3));
+    const rows = Math.max(1, Math.min(12, parseInt($("#rowsInput").val(), 10) || 4));
+    const gap = Math.max(4, parseInt($("#gapSlider").val(), 10) || 32);
+    const showLabels = $("#showLabels").is(":checked");
+    $("#gapVal").text(gap + " px");
+
+    const perPage = cols * rows;
+    const totalPages = Math.max(1, Math.ceil(photos.length / perPage));
+    if (currentPage >= totalPages) currentPage = totalPages - 1;
+    if (currentPage < 0) currentPage = 0;
+
+    canvas.width = size.w;
+    canvas.height = size.h;
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const labelH = showLabels ? Math.max(22, Math.round(size.h * 0.018)) : 0;
+    const gridTop = gap;
+    const gridBottom = size.h - gap;
+    const gridLeft = gap;
+    const gridRight = size.w - gap;
+    const availW = Math.max(40, gridRight - gridLeft - gap * (cols - 1));
+    const availH = Math.max(40, gridBottom - gridTop - gap * (rows - 1));
+    const cellW = availW / cols;
+    const cellH = availH / rows;
+    const imgBoxH = Math.max(20, cellH - labelH);
+
+    const startIdx = currentPage * perPage;
+    const endIdx = Math.min(photos.length, startIdx + perPage);
+
+    for (let slot = 0; slot < perPage; slot++) {
+      const r = Math.floor(slot / cols);
+      const c = slot % cols;
+      const x = gridLeft + c * (cellW + gap);
+      const y = gridTop + r * (cellH + gap);
+      const photo = photos[startIdx + slot];
+
+      ctx.strokeStyle = "#E0E0E0";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, cellW, imgBoxH);
+
+      if (photo) {
+        const pad = Math.min(8, cellW * 0.03, imgBoxH * 0.03);
+        const maxW = Math.max(10, cellW - pad * 2);
+        const maxH = Math.max(10, imgBoxH - pad * 2);
+        const scale = Math.min(maxW / photo.img.width, maxH / photo.img.height);
+        const dw = photo.img.width * scale;
+        const dh = photo.img.height * scale;
+        const dx = x + (cellW - dw) / 2;
+        const dy = y + (imgBoxH - dh) / 2;
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(photo.img, dx, dy, dw, dh);
+
+        if (showLabels) {
+          ctx.fillStyle = "#333333";
+          const fontSize = Math.max(12, Math.min(24, Math.round(labelH * 0.65)));
+          ctx.font = "600 " + fontSize + "px Arial, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          let label = photo.name;
+          while (label.length > 4 && ctx.measureText(label).width > cellW - 8) {
+            label = label.slice(0, -2) + "…";
+          }
+          ctx.fillText(label, x + cellW / 2, y + imgBoxH + labelH / 2);
+        }
+      } else {
+        ctx.fillStyle = "#FAFAFA";
+        ctx.fillRect(x + 1, y + 1, Math.max(0, cellW - 2), Math.max(0, imgBoxH - 2));
+      }
+    }
+
+    $("#photoCountText").text(photos.length);
+    $("#pageText").text((currentPage + 1) + " / " + totalPages);
+    $("#sheetDimText").text(canvas.width + " × " + canvas.height + " px");
+    $("#downloadPageBtn, #clearPhotosBtn").prop("disabled", photos.length === 0);
+    $("#prevPageBtn").prop("disabled", currentPage <= 0);
+    $("#nextPageBtn").prop("disabled", currentPage >= totalPages - 1);
+  }
+
+  function addFiles(fileList) {
+    if (!fileList || !fileList.length) return;
+    let added = 0;
+    Array.from(fileList).forEach(function (file) {
+      if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        const img = new Image();
+        img.onload = function () {
+          photos.push({
+            img: img,
+            name: file.name || "photo"
+          });
+          added++;
+          renderSheet();
+          showToast("Added " + added + " photo(s) to contact sheet");
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  $(".pbtn").on("click", function () {
+    $(".pbtn").removeClass("on");
+    $(this).addClass("on");
+    sheetMode = $(this).data("sheet");
+    $("#customSheetWrap").toggle(sheetMode === "custom");
+    renderSheet();
+  });
+
+  $("#customW, #customH, #colsInput, #rowsInput, #gapSlider, #showLabels, #fmtSelect").on("input change", renderSheet);
+
+  $("#prevPageBtn").on("click", function () {
+    if (currentPage > 0) {
+      currentPage--;
+      renderSheet();
+    }
+  });
+
+  $("#nextPageBtn").on("click", function () {
+    const cols = Math.max(1, parseInt($("#colsInput").val(), 10) || 3);
+    const rows = Math.max(1, parseInt($("#rowsInput").val(), 10) || 4);
+    const totalPages = Math.max(1, Math.ceil(photos.length / (cols * rows)));
+    if (currentPage < totalPages - 1) {
+      currentPage++;
+      renderSheet();
+    }
+  });
+
+  $("#clearPhotosBtn").on("click", function () {
+    photos = [];
+    currentPage = 0;
+    renderSheet();
+    showToast("Cleared all photos from sheet");
+  });
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files.length) addFiles(dt.files);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files.length) {
+      addFiles(this.files);
+      $(this).val("");
+    }
+  });
+
+  $("#downloadPageBtn").on("click", function () {
+    if (!photos.length) return;
+    const mime = $("#fmtSelect").val();
+    const ext = mime === "image/png" ? ".png" : mime === "image/webp" ? ".webp" : ".jpg";
+    const url = mime === "image/png" ? canvas.toDataURL("image/png") : canvas.toDataURL(mime, 0.92);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "contact-sheet-" + sheetMode + "-p" + (currentPage + 1) + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("Downloaded contact sheet page " + (currentPage + 1));
+  });
+
+  renderSheet();
+});
+</script>
+</body>
+</html>
