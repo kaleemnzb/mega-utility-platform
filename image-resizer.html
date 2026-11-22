@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Image Resizer — Pixels, Percentage, Centimetres &amp; Inches</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --g4:#9E9E9E;--surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1060px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 325px;gap:16px;align-items:start}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.preview-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;text-align:center;min-height:280px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+#resCanvas{max-width:100%;max-height:430px;height:auto;border:1px solid var(--brd);background:#fff}
+.meta{margin-top:10px;font-size:.72rem;color:var(--txt2);line-height:1.5}
+.meta strong{color:var(--txt)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.units{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ubtn{background:var(--surf2);color:var(--txt2);border:2px solid var(--brd);border-radius:7px;
+  padding:7px 4px;font-family:var(--ff);font-size:.7rem;font-weight:700;cursor:pointer;text-align:center}
+.ubtn:hover{border-color:var(--g);color:var(--txt)}
+.ubtn.on{border-color:var(--g);background:rgba(134,188,37,.12);color:var(--txt)}
+.dim-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field input[type="number"],.field input[type="range"],.field select{
+  width:100%;padding:7px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.field input[type="range"]{padding:0;border:none;background:transparent;accent-color:var(--g);cursor:pointer}
+.chk-row{display:flex;align-items:center;gap:8px;font-size:.74rem;color:var(--txt2);margin-bottom:14px}
+.chk-row input{width:auto}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Personal <em>| Image Resizer</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #8 — Image Resizer (Pixels, %, Centimetres &amp; Inches)</h2></div>
+    <div class="cbody">
+      <p class="note">Resize images by Pixels (px), Percentage (%), Centimetres (cm), or Inches (in) using your chosen DPI. All resizing runs locally in your browser.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp"/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop an image to resize</div>
+            <div class="dz-sub">JPG, PNG or WEBP &middot; Client-side processing only</div>
+          </div>
+
+          <div class="preview-box">
+            <canvas id="resCanvas" width="480" height="320"></canvas>
+            <div class="meta" id="resMeta">
+              Original: <strong id="origDim">—</strong> &middot; Output: <strong id="outDim">—</strong>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="downloadBtn" disabled>Download Resized Image</button>
+            <button type="button" class="bs" id="resetBtn" disabled>Reset to Original</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label>Measurement Unit</label>
+            <div class="units" id="unitGroup">
+              <button type="button" class="ubtn on" data-unit="px">PX</button>
+              <button type="button" class="ubtn" data-unit="pct">%</button>
+              <button type="button" class="ubtn" data-unit="cm">CM</button>
+              <button type="button" class="ubtn" data-unit="in">IN</button>
+            </div>
+          </div>
+
+          <div class="field" id="pctWrap" style="display:none">
+            <label for="pctSlider">Scale Percentage (<span id="pctVal">100%</span>)</label>
+            <input type="range" id="pctSlider" min="5" max="300" step="1" value="100"/>
+          </div>
+
+          <div class="field" id="dimWrap">
+            <label id="dimLabel">Target Size (Pixels)</label>
+            <div class="dim-row">
+              <div>
+                <input type="number" id="widthInput" min="1" max="10000" step="any" placeholder="Width"/>
+              </div>
+              <div>
+                <input type="number" id="heightInput" min="1" max="10000" step="any" placeholder="Height"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="field" id="dpiWrap" style="display:none">
+            <label for="dpiInput">Resolution (DPI)</label>
+            <input type="number" id="dpiInput" min="36" max="1200" step="1" value="300"/>
+          </div>
+
+          <div class="chk-row">
+            <input type="checkbox" id="lockAspect" checked/>
+            <label for="lockAspect">Lock aspect ratio</label>
+          </div>
+
+          <div class="field">
+            <label for="fmtSelect">Output Format</label>
+            <select id="fmtSelect">
+              <option value="image/jpeg" selected>JPG (.jpg)</option>
+              <option value="image/png">PNG (.png)</option>
+              <option value="image/webp">WEBP (.webp)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let srcImg = null;
+  let baseName = "resized";
+  let unit = "px";
+  let targetPxW = 0;
+  let targetPxH = 0;
+  let updatingFields = false;
+  let toastTimer = null;
+
+  const canvas = document.getElementById("resCanvas");
+  const ctx = canvas.getContext("2d");
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function getDpi() {
+    const d = parseFloat($("#dpiInput").val());
+    return d > 0 ? d : 300;
+  }
+
+  function pxToUnit(px, u) {
+    const dpi = getDpi();
+    if (u === "in") return +(px / dpi).toFixed(2);
+    if (u === "cm") return +((px / dpi) * 2.54).toFixed(2);
+    if (u === "pct" && srcImg) return Math.round((px / srcImg.width) * 100);
+    return Math.round(px);
+  }
+
+  function unitToPx(val, u, axisOrig) {
+    const v = parseFloat(val);
+    if (!isFinite(v) || v <= 0) return 1;
+    const dpi = getDpi();
+    if (u === "in") return Math.max(1, Math.round(v * dpi));
+    if (u === "cm") return Math.max(1, Math.round((v / 2.54) * dpi));
+    if (u === "pct") return Math.max(1, Math.round((axisOrig * v) / 100));
+    return Math.max(1, Math.round(v));
+  }
+
+  function syncInputsFromPx() {
+    if (!srcImg) return;
+    updatingFields = true;
+    if (unit === "pct") {
+      const pct = Math.max(5, Math.min(300, Math.round((targetPxW / srcImg.width) * 100)));
+      $("#pctSlider").val(pct);
+      $("#pctVal").text(pct + "%");
+    } else {
+      $("#widthInput").val(pxToUnit(targetPxW, unit));
+      $("#heightInput").val(pxToUnit(targetPxH, unit));
+    }
+    updatingFields = false;
+  }
+
+  function renderPreview() {
+    if (!srcImg) return;
+    const w = Math.max(1, Math.round(targetPxW));
+    const h = Math.max(1, Math.round(targetPxH));
+
+    canvas.width = w;
+    canvas.height = h;
+    ctx.clearRect(0, 0, w, h);
+    if ($("#fmtSelect").val() === "image/jpeg") {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(srcImg, 0, 0, w, h);
+
+    $("#origDim").text(srcImg.width + " × " + srcImg.height + " px");
+    $("#outDim").text(w + " × " + h + " px");
+  }
+
+  function updateUnitUi() {
+    $("#pctWrap").toggle(unit === "pct");
+    $("#dimWrap").toggle(unit !== "pct");
+    $("#dpiWrap").toggle(unit === "cm" || unit === "in");
+
+    const labelMap = {
+      px: "Target Size (Width × Height in PX)",
+      cm: "Target Size (Width × Height in CM)",
+      in: "Target Size (Width × Height in Inches)"
+    };
+    if (labelMap[unit]) $("#dimLabel").text(labelMap[unit]);
+    syncInputsFromPx();
+  }
+
+  function loadFile(file) {
+    if (!file || !/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+      showToast("Please upload a JPG, PNG, or WEBP image.");
+      return;
+    }
+    baseName = (file.name || "image").replace(/\.[^.]+$/, "");
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const img = new Image();
+      img.onload = function () {
+        srcImg = img;
+        targetPxW = img.width;
+        targetPxH = img.height;
+        $("#downloadBtn, #resetBtn").prop("disabled", false);
+        updateUnitUi();
+        renderPreview();
+        showToast("Loaded image (" + img.width + "×" + img.height + " px)");
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  $(".ubtn").on("click", function () {
+    $(".ubtn").removeClass("on");
+    $(this).addClass("on");
+    unit = $(this).data("unit");
+    updateUnitUi();
+  });
+
+  $("#pctSlider").on("input change", function () {
+    if (!srcImg) return;
+    const pct = parseInt($(this).val(), 10) || 100;
+    $("#pctVal").text(pct + "%");
+    targetPxW = Math.max(1, Math.round((srcImg.width * pct) / 100));
+    targetPxH = Math.max(1, Math.round((srcImg.height * pct) / 100));
+    renderPreview();
+  });
+
+  $("#widthInput").on("input change", function () {
+    if (!srcImg || updatingFields) return;
+    const newW = unitToPx($(this).val(), unit, srcImg.width);
+    targetPxW = newW;
+    if ($("#lockAspect").is(":checked")) {
+      targetPxH = Math.max(1, Math.round((newW * srcImg.height) / srcImg.width));
+      updatingFields = true;
+      $("#heightInput").val(pxToUnit(targetPxH, unit));
+      updatingFields = false;
+    }
+    renderPreview();
+  });
+
+  $("#heightInput").on("input change", function () {
+    if (!srcImg || updatingFields) return;
+    const newH = unitToPx($(this).val(), unit, srcImg.height);
+    targetPxH = newH;
+    if ($("#lockAspect").is(":checked")) {
+      targetPxW = Math.max(1, Math.round((newH * srcImg.width) / srcImg.height));
+      updatingFields = true;
+      $("#widthInput").val(pxToUnit(targetPxW, unit));
+      updatingFields = false;
+    }
+    renderPreview();
+  });
+
+  $("#dpiInput").on("input change", function () {
+    if (!srcImg) return;
+    syncInputsFromPx();
+  });
+
+  $("#fmtSelect").on("change", renderPreview);
+
+  $("#resetBtn").on("click", function () {
+    if (!srcImg) return;
+    targetPxW = srcImg.width;
+    targetPxH = srcImg.height;
+    syncInputsFromPx();
+    renderPreview();
+    showToast("Reset to original dimensions");
+  });
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files[0]) loadFile(dt.files[0]);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files[0]) loadFile(this.files[0]);
+  });
+
+  $("#downloadBtn").on("click", function () {
+    if (!srcImg) return;
+    const mime = $("#fmtSelect").val();
+    const ext = mime === "image/png" ? ".png" : mime === "image/webp" ? ".webp" : ".jpg";
+    const url = mime === "image/png" ? canvas.toDataURL("image/png") : canvas.toDataURL(mime, 0.92);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = baseName + "-" + canvas.width + "x" + canvas.height + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("Downloaded resized image");
+  });
+});
+</script>
+</body>
+</html>
