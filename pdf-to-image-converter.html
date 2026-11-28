@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDF to Image Converter — Render PDF Pages as JPG or PNG</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1040px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:16px 14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.preview-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;text-align:center;min-height:260px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+#renderCanvas{max-width:100%;max-height:420px;height:auto;border:1px solid var(--brd);background:#fff}
+.meta{margin-top:10px;font-size:.72rem;color:var(--txt2);line-height:1.5}
+.meta strong{color:var(--txt)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field select,.field input[type="number"],.field input[type="text"]{
+  width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 16px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover:not(:disabled){background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="pdf-to-image-converter.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">PDF Tools <em>| PDF to Image</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #16 — PDF to Image Converter (Export Pages as PNG or JPG)</h2></div>
+    <div class="cbody">
+      <p class="note">Render PDF pages locally in your browser using PDF.js and download a single page or all pages as high-resolution PNG or JPG images with zero server uploads.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="application/pdf,.pdf"/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop a PDF file to convert</div>
+            <div class="dz-sub">PDF documents &middot; Rendered locally via PDF.js</div>
+          </div>
+
+          <div class="preview-box">
+            <canvas id="renderCanvas" width="480" height="320"></canvas>
+            <div class="meta" id="renderMeta">
+              File: <strong id="docName">None selected</strong> &middot;
+              Pages: <strong id="docPages">0</strong> &middot;
+              Output: <strong id="imgDimText">—</strong>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="dlCurrentBtn" disabled>Download Selected Page</button>
+            <button type="button" class="bs" id="dlAllBtn" disabled>Download All Pages</button>
+            <button type="button" class="bs" id="clearBtn" disabled>Clear File</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label for="pageNumInput">Page Number (1 to <span id="maxPageSpan">0</span>)</label>
+            <input type="number" id="pageNumInput" min="1" max="1" step="1" value="1" disabled/>
+          </div>
+
+          <div class="field">
+            <label for="scaleSelect">Render Scale / Resolution</label>
+            <select id="scaleSelect">
+              <option value="1">1.0&times; Standard</option>
+              <option value="1.5">1.5&times; Medium-High</option>
+              <option value="2" selected>2.0&times; High-Res (Recommended)</option>
+              <option value="3">3.0&times; Ultra High-Res</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="fmtSelect">Image Format</label>
+            <select id="fmtSelect">
+              <option value="image/png" selected>PNG (.png)</option>
+              <option value="image/jpeg">JPG (.jpg)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="basePrefix">File Name Prefix</label>
+            <input type="text" id="basePrefix" value="pdf-page" maxlength="100"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+
+  let pdfDoc = null;
+  let totalPages = 0;
+  let toastTimer = null;
+
+  const canvas = document.getElementById("renderCanvas");
+  const ctx = canvas.getContext("2d");
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function sanitizePrefix(str) {
+    const cleaned = (str || "pdf-page")
+      .trim()
+      .replace(/[^a-zA-Z0-9._-]+/g, "-");
+    return cleaned || "pdf-page";
+  }
+
+  async function renderPageToCanvas(pageNumber) {
+    if (!pdfDoc) return;
+    const clamped = Math.max(1, Math.min(totalPages, pageNumber));
+    $("#pageNumInput").val(clamped);
+
+    const scale = parseFloat($("#scaleSelect").val()) || 2;
+    const page = await pdfDoc.getPage(clamped);
+    const viewport = page.getViewport({ scale: scale });
+
+    canvas.width = Math.round(viewport.width);
+    canvas.height = Math.round(viewport.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if ($("#fmtSelect").val() === "image/jpeg") {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    await page.render({
+      canvasContext: ctx,
+      viewport: viewport
+    }).promise;
+
+    $("#imgDimText").text(canvas.width + " × " + canvas.height + " px (Page " + clamped + ")");
+  }
+
+  function downloadCurrentCanvas(filename) {
+    const mime = $("#fmtSelect").val();
+    const ext = mime === "image/jpeg" ? ".jpg" : ".png";
+    const dataUrl = mime === "image/jpeg" ? canvas.toDataURL("image/jpeg", 0.92) : canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  async function loadPdfFile(file) {
+    if (!file) return;
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+    if (!isPdf) {
+      showToast("Please select a valid PDF file.");
+      return;
+    }
+    if (!window.pdfjsLib || !window.pdfjsLib.getDocument) {
+      showToast("PDF.js library not loaded. Check CDN connection.");
+      return;
+    }
+
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const loadingTask = window.pdfjsLib.getDocument({ data: bytes });
+      pdfDoc = await loadingTask.promise;
+      totalPages = pdfDoc.numPages;
+
+      const stem = (file.name || "document").replace(/\.pdf$/i, "");
+      $("#docName").text(file.name || "document.pdf");
+      $("#docPages").text(totalPages);
+      $("#maxPageSpan").text(totalPages);
+      $("#pageNumInput").prop("disabled", false).attr("max", totalPages).val(1);
+      $("#basePrefix").val(stem + "-page");
+      $("#dlCurrentBtn, #dlAllBtn, #clearBtn").prop("disabled", false);
+
+      await renderPageToCanvas(1);
+      showToast("Loaded PDF (" + totalPages + " page(s))");
+    } catch (err) {
+      showToast("Could not render PDF (it may be encrypted or damaged).");
+    }
+  }
+
+  $("#pageNumInput, #scaleSelect, #fmtSelect").on("change input", async function () {
+    if (!pdfDoc) return;
+    const p = parseInt($("#pageNumInput").val(), 10) || 1;
+    await renderPageToCanvas(p);
+  });
+
+  $("#dlCurrentBtn").on("click", async function () {
+    if (!pdfDoc) return;
+    const p = Math.max(1, Math.min(totalPages, parseInt($("#pageNumInput").val(), 10) || 1));
+    await renderPageToCanvas(p);
+    const prefix = sanitizePrefix($("#basePrefix").val());
+    downloadCurrentCanvas(prefix + "-" + p);
+    showToast("Downloaded page " + p);
+  });
+
+  $("#dlAllBtn").on("click", async function () {
+    if (!pdfDoc || !totalPages) return;
+    try {
+      $("#dlCurrentBtn, #dlAllBtn").prop("disabled", true);
+      const prefix = sanitizePrefix($("#basePrefix").val());
+      for (let p = 1; p <= totalPages; p++) {
+        showToast("Rendering page " + p + " of " + totalPages + "...");
+        await renderPageToCanvas(p);
+        downloadCurrentCanvas(prefix + "-" + p);
+        await new Promise(function (resolve) { setTimeout(resolve, 160); });
+      }
+      showToast("Downloaded all " + totalPages + " page image(s)");
+    } catch (err) {
+      showToast("Error exporting pages.");
+    } finally {
+      $("#dlCurrentBtn, #dlAllBtn").prop("disabled", !pdfDoc);
+    }
+  });
+
+  $("#clearBtn").on("click", function () {
+    pdfDoc = null;
+    totalPages = 0;
+    canvas.width = 480;
+    canvas.height = 320;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    $("#docName").text("None selected");
+    $("#docPages").text("0");
+    $("#maxPageSpan").text("0");
+    $("#imgDimText").text("—");
+    $("#pageNumInput").prop("disabled", true).val(1);
+    $("#dlCurrentBtn, #dlAllBtn, #clearBtn").prop("disabled", true);
+    showToast("Cleared PDF");
+  });
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files[0]) loadPdfFile(dt.files[0]);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files[0]) {
+      loadPdfFile(this.files[0]);
+      $(this).val("");
+    }
+  });
+});
+</script>
+</body>
+</html>
