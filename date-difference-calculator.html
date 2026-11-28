@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Date Difference Calculator — Duration in Days, Weeks &amp; Months</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+  --c-ymd:#00BFA5;--c-days:#2563EB;--c-wks:#DC2626;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;
+        --c-ymd:#00F5D4;--c-days:#60A5FA;--c-wks:#F87171;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field input[type="date"]{
+  width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.84rem;font-family:var(--ff)}
+.chk-row{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--txt2);margin-bottom:14px}
+.chk-row input{accent-color:var(--g);cursor:pointer}
+.res-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;display:flex;flex-direction:column;gap:10px}
+.kpi{background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:12px}
+.kpi-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--txt2)}
+.kpi-val{font-size:1.18rem;font-weight:800;color:var(--txt);margin-top:3px;word-break:break-word}
+.kpi-val.ymd{color:var(--c-ymd)}
+.kpi-val.days{color:var(--c-days)}
+.kpi-val.wks{color:var(--c-wks)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover{background:var(--surf2);color:var(--txt)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="date-difference-calculator.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Calculators <em>| Date Difference</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #26 — Date Difference Calculator (Days, Weeks &amp; Months)</h2></div>
+    <div class="cbody">
+      <p class="note">Find the exact span in years, months, and days—plus total days, weeks, and hours—between any two dates directly in your browser.</p>
+
+      <div class="grid2">
+        <div>
+          <div class="field">
+            <label for="startDateInput">Start Date</label>
+            <input type="date" id="startDateInput"/>
+          </div>
+
+          <div class="field">
+            <label for="endDateInput">End Date</label>
+            <input type="date" id="endDateInput"/>
+          </div>
+
+          <label class="chk-row">
+            <input type="checkbox" id="includeEndDay"/>
+            <span>Include end date (+1 day)</span>
+          </label>
+
+          <div class="brow">
+            <button type="button" class="bp" id="calcDateDiffBtn">Calculate Difference</button>
+            <button type="button" class="bs" id="swapDatesBtn">Swap Dates</button>
+            <button type="button" class="bs" id="todayEndBtn">End = Today</button>
+          </div>
+        </div>
+
+        <div class="res-box">
+          <div class="kpi">
+            <div class="kpi-lbl">Years, Months &amp; Days</div>
+            <div class="kpi-val ymd" id="ymdOut">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Total Days</div>
+            <div class="kpi-val days" id="daysOut">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Weeks &amp; Remaining Days</div>
+            <div class="kpi-val wks" id="weeksOut">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let toastTimer = null;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2100);
+  }
+
+  function toIsoDate(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return yyyy + "-" + mm + "-" + dd;
+  }
+
+  function parseIsoDate(str) {
+    if (!str) return null;
+    const parts = str.split("-");
+    if (parts.length !== 3) return null;
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const dt = new Date(y, m, day);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m || dt.getDate() !== day) return null;
+    return dt;
+  }
+
+  function daysInMonth(year, monthIndexZeroBased) {
+    return new Date(year, monthIndexZeroBased + 1, 0).getDate();
+  }
+
+  function computeDiff() {
+    const d1 = parseIsoDate($("#startDateInput").val());
+    const d2 = parseIsoDate($("#endDateInput").val());
+    if (!d1 || !d2) {
+      $("#ymdOut, #daysOut, #weeksOut").text("—");
+      return;
+    }
+
+    const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
+    const utc2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
+    const msPerDay = 86400000;
+    const rawDays = Math.abs(Math.round((utc2 - utc1) / msPerDay));
+    const inclusiveExtra = $("#includeEndDay").is(":checked") ? 1 : 0;
+    const totalDays = rawDays + inclusiveExtra;
+
+    const earlier = utc1 <= utc2 ? d1 : d2;
+    const later = utc1 <= utc2 ? d2 : d1;
+
+    let years = later.getFullYear() - earlier.getFullYear();
+    let months = later.getMonth() - earlier.getMonth();
+    let days = later.getDate() - earlier.getDate() + inclusiveExtra;
+
+    while (days < 0) {
+      months -= 1;
+      const prevMonth = (later.getMonth() - 1 + 12) % 12;
+      const prevYear = later.getMonth() === 0 ? later.getFullYear() - 1 : later.getFullYear();
+      days += daysInMonth(prevYear, prevMonth);
+    }
+
+    const monthDaysCap = daysInMonth(later.getFullYear(), later.getMonth());
+    if (days >= monthDaysCap) {
+      days -= monthDaysCap;
+      months += 1;
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+    if (months >= 12) {
+      years += Math.floor(months / 12);
+      months = months % 12;
+    }
+
+    const weeks = Math.floor(totalDays / 7);
+    const remDays = totalDays % 7;
+
+    $("#ymdOut").text(years + "y, " + months + "m, " + days + "d");
+    $("#daysOut").text(totalDays.toLocaleString("en-IN") + " Days");
+    $("#weeksOut").text(weeks.toLocaleString("en-IN") + " Weeks, " + remDays + "d");
+  }
+
+  const now = new Date();
+  const startDefault = new Date(now.getFullYear(), now.getMonth(), Math.max(1, now.getDate() - 30));
+  $("#startDateInput").val(toIsoDate(startDefault));
+  $("#endDateInput").val(toIsoDate(now));
+
+  $("#startDateInput, #endDateInput, #includeEndDay").on("change input", computeDiff);
+
+  $("#calcDateDiffBtn").on("click", function () {
+    computeDiff();
+    showToast("Date difference calculated");
+  });
+
+  $("#swapDatesBtn").on("click", function () {
+    const a = $("#startDateInput").val();
+    const b = $("#endDateInput").val();
+    $("#startDateInput").val(b);
+    $("#endDateInput").val(a);
+    computeDiff();
+    showToast("Swapped start and end dates");
+  });
+
+  $("#todayEndBtn").on("click", function () {
+    $("#endDateInput").val(toIsoDate(new Date()));
+    computeDiff();
+    showToast("Set end date to today");
+  });
+
+  computeDiff();
+});
+</script>
+</body>
+</html>
