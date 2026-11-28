@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Age Calculator — Exact Age &amp; Next Birthday Countdown</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field input[type="date"]{
+  width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.84rem;font-family:var(--ff)}
+.res-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;display:flex;flex-direction:column;gap:10px}
+.kpi{background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:12px}
+.kpi-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--txt2)}
+.kpi-val{font-size:1.18rem;font-weight:800;color:var(--txt);margin-top:3px}
+.kpi-val.hi{color:var(--gd)}
+@media(prefers-color-scheme:dark){.kpi-val.hi{color:var(--g)}}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover{background:var(--surf2);color:var(--txt)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="age-calculator.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Calculators <em>| Age Calculator</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #21 — Age Calculator (Years, Months, Days &amp; Next Birthday)</h2></div>
+    <div class="cbody">
+      <p class="note">Calculate exact age in years, months, and days up to today (or any target date), along with total days/weeks lived and upcoming birthday countdown.</p>
+
+      <div class="grid2">
+        <div>
+          <div class="field">
+            <label for="dobInput">Date of Birth</label>
+            <input type="date" id="dobInput" value="2000-01-01"/>
+          </div>
+
+          <div class="field">
+            <label for="asOfInput">Calculate Age As Of Date</label>
+            <input type="date" id="asOfInput"/>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="calcAgeBtn">Calculate Age</button>
+            <button type="button" class="bs" id="setTodayBtn">As Of Today</button>
+          </div>
+        </div>
+
+        <div class="res-box">
+          <div class="kpi">
+            <div class="kpi-lbl">Exact Age</div>
+            <div class="kpi-val hi" id="exactAgeOut">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Total Days &amp; Weeks Lived</div>
+            <div class="kpi-val" id="livedOut">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Next Birthday</div>
+            <div class="kpi-val" id="nextBdayOut">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let toastTimer = null;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2200);
+  }
+
+  function toIsoDate(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return yyyy + "-" + mm + "-" + dd;
+  }
+
+  function parseIsoDate(str) {
+    if (!str) return null;
+    const parts = str.split("-");
+    if (parts.length !== 3) return null;
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const dt = new Date(y, m, day);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m || dt.getDate() !== day) return null;
+    return dt;
+  }
+
+  function daysInMonth(year, monthIndexZeroBased) {
+    return new Date(year, monthIndexZeroBased + 1, 0).getDate();
+  }
+
+  function computeAge() {
+    const dob = parseIsoDate($("#dobInput").val());
+    const target = parseIsoDate($("#asOfInput").val());
+
+    if (!dob || !target) {
+      $("#exactAgeOut, #livedOut, #nextBdayOut").text("—");
+      return;
+    }
+
+    if (dob.getTime() > target.getTime()) {
+      $("#exactAgeOut").text("DOB is after target date");
+      $("#livedOut, #nextBdayOut").text("—");
+      return;
+    }
+
+    let years = target.getFullYear() - dob.getFullYear();
+    let months = target.getMonth() - dob.getMonth();
+    let days = target.getDate() - dob.getDate();
+
+    if (days < 0) {
+      months -= 1;
+      const prevMonth = (target.getMonth() - 1 + 12) % 12;
+      const prevYear = target.getMonth() === 0 ? target.getFullYear() - 1 : target.getFullYear();
+      days += daysInMonth(prevYear, prevMonth);
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    const msPerDay = 86400000;
+    const utcDob = Date.UTC(dob.getFullYear(), dob.getMonth(), dob.getDate());
+    const utcTarget = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+    const totalDays = Math.max(0, Math.round((utcTarget - utcDob) / msPerDay));
+    const totalWeeks = Math.floor(totalDays / 7);
+
+    let nextBdayYear = target.getFullYear();
+    let bMonth = dob.getMonth();
+    let bDay = dob.getDate();
+    if (bMonth === 1 && bDay === 29 && !((nextBdayYear % 4 === 0 && nextBdayYear % 100 !== 0) || nextBdayYear % 400 === 0)) {
+      bDay = 28;
+    }
+    let nextBday = new Date(nextBdayYear, bMonth, bDay);
+    if (nextBday.getTime() < target.getTime()) {
+      nextBdayYear += 1;
+      let nbDay = dob.getDate();
+      if (bMonth === 1 && nbDay === 29 && !((nextBdayYear % 4 === 0 && nextBdayYear % 100 !== 0) || nextBdayYear % 400 === 0)) {
+        nbDay = 28;
+      }
+      nextBday = new Date(nextBdayYear, bMonth, nbDay);
+    }
+
+    const utcNext = Date.UTC(nextBday.getFullYear(), nextBday.getMonth(), nextBday.getDate());
+    const daysUntil = Math.round((utcNext - utcTarget) / msPerDay);
+
+    $("#exactAgeOut").text(years + " Years, " + months + " Months, " + days + " Days");
+    $("#livedOut").text(totalDays.toLocaleString("en-IN") + " Days (" + totalWeeks.toLocaleString("en-IN") + " Weeks)");
+    $("#nextBdayOut").text(
+      daysUntil === 0
+        ? "Today (" + toIsoDate(nextBday) + ")"
+        : "In " + daysUntil + " day(s) (" + toIsoDate(nextBday) + ")"
+    );
+  }
+
+  $("#asOfInput").val(toIsoDate(new Date()));
+  $("#dobInput, #asOfInput").on("change input", computeAge);
+
+  $("#calcAgeBtn").on("click", function () {
+    computeAge();
+    showToast("Age calculated");
+  });
+
+  $("#setTodayBtn").on("click", function () {
+    $("#asOfInput").val(toIsoDate(new Date()));
+    computeAge();
+    showToast("Set target date to today");
+  });
+
+  computeAge();
+});
+</script>
+</body>
+</html>
