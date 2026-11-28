@@ -11,10 +11,12 @@
   --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
   --txt2:#53565A;--brd:#E6E6E6;--r:10px;
   --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+  --c-emi:#00BFA5;--c-int:#DC2626;--c-tot:#2563EB;
 }
 @media(prefers-color-scheme:dark){
   :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
-        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+        --brd:#333;--g:#86EB22;--gd:#70C01A;
+        --c-emi:#00F5D4;--c-int:#F87171;--c-tot:#60A5FA;}
 }
 *,*::before,*::after{
   box-sizing:border-box;margin:0;padding:0;
@@ -65,8 +67,9 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
 .kpi{background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:12px}
 .kpi-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--txt2)}
 .kpi-val{font-size:1.25rem;font-weight:800;color:var(--txt);margin-top:3px}
-.kpi-val.hi{color:var(--gd)}
-@media(prefers-color-scheme:dark){.kpi-val.hi{color:var(--g)}}
+.kpi-val.emi-color{color:var(--c-emi)}
+.kpi-val.int-color{color:var(--c-int)}
+.kpi-val.tot-color{color:var(--c-tot)}
 .brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
   font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
@@ -148,15 +151,15 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
         <div class="res-box">
           <div class="kpi">
             <div class="kpi-lbl">Monthly EMI</div>
-            <div class="kpi-val hi" id="emiOut">₹0.00</div>
+            <div class="kpi-val emi-color" id="emiOut">₹0.00</div>
           </div>
           <div class="kpi">
             <div class="kpi-lbl">Total Interest Payable</div>
-            <div class="kpi-val" id="interestOut">₹0.00</div>
+            <div class="kpi-val int-color" id="interestOut">₹0.00</div>
           </div>
           <div class="kpi">
             <div class="kpi-lbl">Total Payable Amount</div>
-            <div class="kpi-val" id="totalOut">₹0.00</div>
+            <div class="kpi-val tot-color" id="totalOut">₹0.00</div>
           </div>
         </div>
       </div>
@@ -251,7 +254,6 @@ $(function () {
     $("#totalOut").text(fmtRupees(totalPayable));
   }
 
-  // Principal sync (input <-> slider)
   $("#principalInput").on("input change", function () {
     const clamped = clampToSlider($("#principalSlider"), $(this).val(), false);
     $("#principalSlider").val(clamped);
@@ -262,7 +264,6 @@ $(function () {
     computeEmi();
   });
 
-  // Interest rate sync (input <-> slider)
   $("#rateInput").on("input change", function () {
     const clamped = clampToSlider($("#rateSlider"), $(this).val(), true);
     $("#rateSlider").val(clamped);
@@ -273,7 +274,6 @@ $(function () {
     computeEmi();
   });
 
-  // Tenure sync (input <-> slider)
   $("#tenureInput").on("input change", function () {
     const clamped = clampToSlider($("#tenureSlider"), $(this).val(), false);
     $("#tenureSlider").val(clamped);
@@ -284,7 +284,6 @@ $(function () {
     computeEmi();
   });
 
-  // Tenure unit change
   $("#tenureUnit").on("change", function () {
     const unit = $(this).val();
     const curVal = parseInt($("#tenureInput").val(), 10) || 1;
