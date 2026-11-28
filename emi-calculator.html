@@ -50,12 +50,16 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
   padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
 .grid2{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
 @media(max-width:780px){.grid2{grid-template-columns:1fr}}
-.field{margin-bottom:14px}
-.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
-  color:var(--txt2);margin-bottom:5px}
+.field{margin-bottom:16px}
+.field-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.field label{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--txt2)}
+.pill-val{font-size:.74rem;font-weight:800;color:var(--txt);background:var(--surf2);
+  border:1px solid var(--brd);padding:2px 8px;border-radius:6px}
 .field input[type="number"],.field select{
   width:100%;padding:8px 10px;border:1px solid var(--brd);
   border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.84rem;font-family:var(--ff)}
+.slider{width:100%;margin-top:8px;accent-color:var(--g);cursor:pointer;height:6px}
+.slider-bounds{display:flex;justify-content:space-between;font-size:.66rem;color:var(--txt2);margin-top:2px}
 .res-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
   padding:14px;display:flex;flex-direction:column;gap:10px}
 .kpi{background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:12px}
@@ -91,27 +95,44 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
   <div class="card">
     <div class="chd"><h2>Tool #22 — EMI Calculator (Home, Car &amp; Personal Loan in ₹)</h2></div>
     <div class="cbody">
-      <p class="note">Calculate monthly EMI, total interest payable, and total payable amount with Indian Rupee (₹) formatting directly in your browser.</p>
+      <p class="note">Adjust each value using either the number box or the slider below it. Monthly EMI, total interest, and total payable update immediately with Indian Rupee (₹) formatting.</p>
 
       <div class="grid2">
         <div>
           <div class="field">
-            <label for="principalInput">Loan Principal Amount (₹)</label>
-            <input type="number" id="principalInput" min="1000" step="1000" value="500000"/>
+            <div class="field-top">
+              <label for="principalInput">Loan Principal Amount (₹)</label>
+              <span class="pill-val" id="principalBadge">₹5,00,000</span>
+            </div>
+            <input type="number" id="principalInput" min="10000" max="50000000" step="10000" value="500000"/>
+            <input type="range" id="principalSlider" class="slider" min="10000" max="50000000" step="10000" value="500000" aria-label="Loan Principal Slider"/>
+            <div class="slider-bounds"><span>₹10,000</span><span>₹5,00,00,000</span></div>
           </div>
 
           <div class="field">
-            <label for="rateInput">Annual Interest Rate (% p.a.)</label>
-            <input type="number" id="rateInput" min="0" max="60" step="0.1" value="8.5"/>
+            <div class="field-top">
+              <label for="rateInput">Annual Interest Rate (% p.a.)</label>
+              <span class="pill-val" id="rateBadge">8.5%</span>
+            </div>
+            <input type="number" id="rateInput" min="1" max="30" step="0.1" value="8.5"/>
+            <input type="range" id="rateSlider" class="slider" min="1" max="30" step="0.1" value="8.5" aria-label="Annual Interest Rate Slider"/>
+            <div class="slider-bounds"><span>1%</span><span>30%</span></div>
           </div>
 
           <div class="field">
-            <label for="tenureInput">Loan Tenure</label>
-            <input type="number" id="tenureInput" min="1" max="360" step="1" value="5"/>
+            <div class="field-top">
+              <label for="tenureInput">Loan Tenure</label>
+              <span class="pill-val" id="tenureBadge">5 Years</span>
+            </div>
+            <input type="number" id="tenureInput" min="1" max="30" step="1" value="5"/>
+            <input type="range" id="tenureSlider" class="slider" min="1" max="30" step="1" value="5" aria-label="Loan Tenure Slider"/>
+            <div class="slider-bounds"><span id="tenureMinLabel">1 Yr</span><span id="tenureMaxLabel">30 Yrs</span></div>
           </div>
 
           <div class="field">
-            <label for="tenureUnit">Tenure Unit</label>
+            <div class="field-top">
+              <label for="tenureUnit">Tenure Unit</label>
+            </div>
             <select id="tenureUnit">
               <option value="years" selected>Years</option>
               <option value="months">Months</option>
@@ -161,18 +182,52 @@ $(function () {
     toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2200);
   }
 
-  function fmtRupees(val) {
+  function fmtRupees(val, decimals) {
+    const dec = typeof decimals === "number" ? decimals : 2;
     return "₹" + Number(val || 0).toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: dec,
+      maximumFractionDigits: dec
     });
+  }
+
+  function syncTenureBounds(unit, keepVal) {
+    const isMonths = unit === "months";
+    const minVal = 1;
+    const maxVal = isMonths ? 360 : 30;
+    const stepVal = 1;
+
+    $("#tenureInput, #tenureSlider").attr({ min: minVal, max: maxVal, step: stepVal });
+    $("#tenureMinLabel").text(isMonths ? "1 Mo" : "1 Yr");
+    $("#tenureMaxLabel").text(isMonths ? "360 Mos" : "30 Yrs");
+
+    let val = parseInt(keepVal, 10);
+    if (!Number.isFinite(val) || val < minVal) val = isMonths ? 60 : 5;
+    if (val > maxVal) val = maxVal;
+
+    $("#tenureInput, #tenureSlider").val(val);
+    $("#tenureBadge").text(val + (isMonths ? (val === 1 ? " Month" : " Months") : (val === 1 ? " Year" : " Years")));
+  }
+
+  function clampToSlider($slider, rawVal, allowDecimal) {
+    const min = parseFloat($slider.attr("min"));
+    const max = parseFloat($slider.attr("max"));
+    let num = allowDecimal ? parseFloat(rawVal) : parseInt(rawVal, 10);
+    if (!Number.isFinite(num)) return min;
+    if (num < min) return min;
+    if (num > max) return max;
+    return allowDecimal ? Math.round(num * 10) / 10 : num;
   }
 
   function computeEmi() {
     const p = Math.max(0, parseFloat($("#principalInput").val()) || 0);
     const annualRate = Math.max(0, parseFloat($("#rateInput").val()) || 0);
     const rawTenure = Math.max(1, parseInt($("#tenureInput").val(), 10) || 1);
-    const months = $("#tenureUnit").val() === "years" ? rawTenure * 12 : rawTenure;
+    const isMonths = $("#tenureUnit").val() === "months";
+    const months = isMonths ? rawTenure : rawTenure * 12;
+
+    $("#principalBadge").text(fmtRupees(p, 0));
+    $("#rateBadge").text(annualRate.toFixed(1).replace(/\.0$/, "") + "%");
+    $("#tenureBadge").text(rawTenure + (isMonths ? (rawTenure === 1 ? " Month" : " Months") : (rawTenure === 1 ? " Year" : " Years")));
 
     if (p <= 0 || months <= 0) {
       $("#emiOut, #interestOut, #totalOut").text(fmtRupees(0));
@@ -196,7 +251,47 @@ $(function () {
     $("#totalOut").text(fmtRupees(totalPayable));
   }
 
-  $("#principalInput, #rateInput, #tenureInput, #tenureUnit").on("input change", computeEmi);
+  // Principal sync (input <-> slider)
+  $("#principalInput").on("input change", function () {
+    const clamped = clampToSlider($("#principalSlider"), $(this).val(), false);
+    $("#principalSlider").val(clamped);
+    computeEmi();
+  });
+  $("#principalSlider").on("input change", function () {
+    $("#principalInput").val($(this).val());
+    computeEmi();
+  });
+
+  // Interest rate sync (input <-> slider)
+  $("#rateInput").on("input change", function () {
+    const clamped = clampToSlider($("#rateSlider"), $(this).val(), true);
+    $("#rateSlider").val(clamped);
+    computeEmi();
+  });
+  $("#rateSlider").on("input change", function () {
+    $("#rateInput").val($(this).val());
+    computeEmi();
+  });
+
+  // Tenure sync (input <-> slider)
+  $("#tenureInput").on("input change", function () {
+    const clamped = clampToSlider($("#tenureSlider"), $(this).val(), false);
+    $("#tenureSlider").val(clamped);
+    computeEmi();
+  });
+  $("#tenureSlider").on("input change", function () {
+    $("#tenureInput").val($(this).val());
+    computeEmi();
+  });
+
+  // Tenure unit change
+  $("#tenureUnit").on("change", function () {
+    const unit = $(this).val();
+    const curVal = parseInt($("#tenureInput").val(), 10) || 1;
+    const converted = unit === "months" ? curVal * 12 : Math.max(1, Math.round(curVal / 12));
+    syncTenureBounds(unit, converted);
+    computeEmi();
+  });
 
   $("#calcBtn").on("click", function () {
     computeEmi();
@@ -204,14 +299,15 @@ $(function () {
   });
 
   $("#resetBtn").on("click", function () {
-    $("#principalInput").val(500000);
-    $("#rateInput").val(8.5);
-    $("#tenureInput").val(5);
+    $("#principalInput, #principalSlider").val(500000);
+    $("#rateInput, #rateSlider").val(8.5);
     $("#tenureUnit").val("years");
+    syncTenureBounds("years", 5);
     computeEmi();
     showToast("Reset to default loan values");
   });
 
+  syncTenureBounds("years", 5);
   computeEmi();
 });
 </script>
