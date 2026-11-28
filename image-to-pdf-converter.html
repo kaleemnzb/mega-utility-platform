@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Image to PDF Converter — Combine JPG &amp; PNG into a PDF</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1040px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:18px 14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.img-list{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto}
+.img-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:8px 12px;
+  flex-wrap:wrap}
+.img-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.thumb{width:42px;height:42px;object-fit:cover;border-radius:6px;border:1px solid var(--brd);background:#fff;flex-shrink:0}
+.img-name{font-size:.78rem;font-weight:700;color:var(--txt);word-break:break-word}
+.img-meta{font-size:.69rem;color:var(--txt2);margin-top:2px}
+.empty-box{text-align:center;color:var(--txt2);font-size:.76rem;padding:24px 12px;
+  background:var(--surf2);border:1px solid var(--brd);border-radius:8px}
+.mini-btns{display:flex;gap:5px}
+.mbtn{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:6px;
+  padding:5px 8px;font-family:var(--ff);font-size:.7rem;font-weight:700;cursor:pointer}
+.mbtn:hover:not(:disabled){background:var(--surf2);color:var(--txt);border-color:var(--g)}
+.mbtn:disabled{opacity:.35;cursor:not-allowed}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field select,.field input[type="text"],.field input[type="number"]{
+  width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.info-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:12px;font-size:.74rem;color:var(--txt2);line-height:1.6}
+.info-box strong{color:var(--txt)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover:not(:disabled){background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="image-to-pdf-converter.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">PDF Tools <em>| Image to PDF</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #17 — Image to PDF Converter (JPG &amp; PNG to PDF)</h2></div>
+    <div class="cbody">
+      <p class="note">Select or drop one or more JPG or PNG images, arrange their page order, choose page size and margin, and generate a single PDF locally in your browser.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop JPG or PNG images</div>
+            <div class="dz-sub">Multiple images supported &middot; Zero server uploads</div>
+          </div>
+
+          <div id="imgList" class="img-list">
+            <div class="empty-box">No images added yet. Select or drop JPG/PNG files above to create a PDF.</div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="createPdfBtn" disabled>Create &amp; Download PDF</button>
+            <button type="button" class="bs" id="clearBtn" disabled>Clear All</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label for="pageSizeSelect">Page Size</label>
+            <select id="pageSizeSelect">
+              <option value="a4" selected>A4 Portrait (595 &times; 842 pt)</option>
+              <option value="letter">US Letter Portrait (612 &times; 792 pt)</option>
+              <option value="fit">Fit to Image Dimensions</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="marginInput">Page Margin (pt)</label>
+            <input type="number" id="marginInput" min="0" max="144" step="4" value="24"/>
+          </div>
+
+          <div class="field">
+            <label for="outFileName">Output File Name</label>
+            <input type="text" id="outFileName" value="images-to-pdf" maxlength="100"/>
+          </div>
+
+          <div class="info-box">
+            <div>Images Added: <strong id="imgCount">0</strong></div>
+            <div>PDF Pages: <strong id="pdfPageCount">0</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  const imgItems = [];
+  let toastTimer = null;
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function escapeHtml(str) {
+    return $("<div>").text(str || "").html();
+  }
+
+  function sanitizeName(str, fallback) {
+    const cleaned = (str || fallback || "images-to-pdf")
+      .trim()
+      .replace(/\.pdf$/i, "")
+      .replace(/[^a-zA-Z0-9._-]+/g, "-");
+    return cleaned || fallback || "images-to-pdf";
+  }
+
+  function readAsDataUrl(file) {
+    return new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function (ev) { resolve(ev.target.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function loadImageDims(src) {
+    return new Promise(function (resolve, reject) {
+      const img = new Image();
+      img.onload = function () { resolve({ width: img.naturalWidth || img.width, height: img.naturalHeight || img.height }); };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  function renderList() {
+    if (!imgItems.length) {
+      $("#imgList").html('<div class="empty-box">No images added yet. Select or drop JPG/PNG files above to create a PDF.</div>');
+      $("#createPdfBtn, #clearBtn").prop("disabled", true);
+      $("#imgCount, #pdfPageCount").text("0");
+      return;
+    }
+
+    let html = "";
+    imgItems.forEach(function (item, idx) {
+      html +=
+        '<div class="img-row">' +
+          '<div class="img-left">' +
+            '<img class="thumb" src="' + item.dataUrl + '" alt="' + escapeHtml(item.name) + '"/>' +
+            '<div>' +
+              '<div class="img-name">' + (idx + 1) + ". " + escapeHtml(item.name) + '</div>' +
+              '<div class="img-meta">' + item.width + " &times; " + item.height + " px &middot; " + item.typeLabel + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="mini-btns">' +
+            '<button type="button" class="mbtn move-up" data-idx="' + idx + '"' + (idx === 0 ? " disabled" : "") + '>&uarr;</button>' +
+            '<button type="button" class="mbtn move-down" data-idx="' + idx + '"' + (idx === imgItems.length - 1 ? " disabled" : "") + '>&darr;</button>' +
+            '<button type="button" class="mbtn remove-img" data-idx="' + idx + '">Remove</button>' +
+          '</div>' +
+        '</div>';
+    });
+
+    $("#imgList").html(html);
+    $("#createPdfBtn, #clearBtn").prop("disabled", false);
+    $("#imgCount, #pdfPageCount").text(imgItems.length);
+  }
+
+  async function addImageFiles(fileList) {
+    if (!fileList || !fileList.length) return;
+    let added = 0;
+
+    for (const file of Array.from(fileList)) {
+      const isJpg = file.type === "image/jpeg" || /\.(jpe?g)$/i.test(file.name || "");
+      const isPng = file.type === "image/png" || /\.png$/i.test(file.name || "");
+      if (!isJpg && !isPng) continue;
+
+      try {
+        const dataUrl = await readAsDataUrl(file);
+        const dims = await loadImageDims(dataUrl);
+        imgItems.push({
+          name: file.name || (isPng ? "image.png" : "image.jpg"),
+          mime: isPng ? "image/png" : "image/jpeg",
+          typeLabel: isPng ? "PNG" : "JPG",
+          dataUrl: dataUrl,
+          width: dims.width,
+          height: dims.height
+        });
+        added++;
+      } catch (err) {
+        showToast("Could not read image '" + (file.name || "file") + "'.");
+      }
+    }
+
+    if (added > 0) {
+      renderList();
+      showToast("Added " + added + " image(s)");
+    } else {
+      showToast("Please choose JPG or PNG images.");
+    }
+  }
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files.length) addImageFiles(dt.files);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files.length) {
+      addImageFiles(this.files);
+      $(this).val("");
+    }
+  });
+
+  $(document).on("click", ".move-up", function () {
+    const idx = parseInt($(this).data("idx"), 10);
+    if (idx > 0) {
+      const tmp = imgItems[idx - 1];
+      imgItems[idx - 1] = imgItems[idx];
+      imgItems[idx] = tmp;
+      renderList();
+    }
+  });
+
+  $(document).on("click", ".move-down", function () {
+    const idx = parseInt($(this).data("idx"), 10);
+    if (idx >= 0 && idx < imgItems.length - 1) {
+      const tmp = imgItems[idx + 1];
+      imgItems[idx + 1] = imgItems[idx];
+      imgItems[idx] = tmp;
+      renderList();
+    }
+  });
+
+  $(document).on("click", ".remove-img", function () {
+    const idx = parseInt($(this).data("idx"), 10);
+    if (idx >= 0 && idx < imgItems.length) {
+      imgItems.splice(idx, 1);
+      renderList();
+      showToast("Removed image");
+    }
+  });
+
+  $("#clearBtn").on("click", function () {
+    imgItems.length = 0;
+    renderList();
+    showToast("Cleared all images");
+  });
+
+  $("#createPdfBtn").on("click", async function () {
+    if (!imgItems.length) return;
+    if (!window.PDFLib || !window.PDFLib.PDFDocument) {
+      showToast("PDF library not loaded. Check CDN connection.");
+      return;
+    }
+
+    try {
+      $("#createPdfBtn").prop("disabled", true).text("Creating PDF...");
+      const { PDFDocument } = window.PDFLib;
+      const pdfDoc = await PDFDocument.create();
+      const sizeMode = $("#pageSizeSelect").val();
+      const margin = Math.max(0, Math.min(144, parseFloat($("#marginInput").val()) || 0));
+
+      for (const item of imgItems) {
+        const embedded = item.mime === "image/png"
+          ? await pdfDoc.embedPng(item.dataUrl)
+          : await pdfDoc.embedJpg(item.dataUrl);
+
+        let pageW;
+        let pageH;
+        if (sizeMode === "letter") {
+          pageW = 612;
+          pageH = 792;
+        } else if (sizeMode === "fit") {
+          pageW = Math.max(72, embedded.width + margin * 2);
+          pageH = Math.max(72, embedded.height + margin * 2);
+        } else {
+          pageW = 595.28;
+          pageH = 841.89;
+        }
+
+        const page = pdfDoc.addPage([pageW, pageH]);
+        const maxW = Math.max(20, pageW - margin * 2);
+        const maxH = Math.max(20, pageH - margin * 2);
+        const scale = Math.min(maxW / embedded.width, maxH / embedded.height);
+        const drawW = embedded.width * scale;
+        const drawH = embedded.height * scale;
+        const drawX = (pageW - drawW) / 2;
+        const drawY = (pageH - drawH) / 2;
+
+        page.drawImage(embedded, {
+          x: drawX,
+          y: drawY,
+          width: drawW,
+          height: drawH
+        });
+      }
+
+      const outBytes = await pdfDoc.save();
+      const blob = new Blob([outBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const fileName = sanitizeName($("#outFileName").val(), "images-to-pdf") + ".pdf";
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+
+      showToast("Created PDF (" + imgItems.length + " page(s))");
+    } catch (err) {
+      showToast("Error creating PDF from images.");
+    } finally {
+      $("#createPdfBtn").prop("disabled", !imgItems.length).text("Create & Download PDF");
+    }
+  });
+});
+</script>
+</body>
+</html>
