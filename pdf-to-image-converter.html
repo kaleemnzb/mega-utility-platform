@@ -41,7 +41,7 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
 .hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
   color:var(--txt2);padding:3px 10px;border-radius:20px}
-.wrap{max-width:1040px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.wrap{max-width:1060px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
 .card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
   box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
 .chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
@@ -49,26 +49,48 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
 .cbody{padding:16px}
 .note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
   padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
-.grid2{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
-@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.grid2{display:grid;grid-template-columns:1fr 315px;gap:16px;align-items:start}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
 .dz{border:2px dashed var(--brd);border-radius:var(--r);padding:16px 14px;text-align:center;
   cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
 .dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
 .dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
 .dz-sub{font-size:.7rem;color:var(--txt2)}
 #fileInput{display:none}
+.sel-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  margin-bottom:10px}
+.sel-title{font-size:.74rem;font-weight:700;color:var(--txt2)}
+.sel-title strong{color:var(--txt)}
+.sel-actions{display:flex;gap:6px}
+.sbtn{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:6px;
+  padding:5px 10px;font-family:var(--ff);font-size:.72rem;font-weight:700;cursor:pointer}
+.sbtn:hover:not(:disabled){background:var(--surf2);color:var(--txt);border-color:var(--g)}
+.sbtn:disabled{opacity:.4;cursor:not-allowed}
+.page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:8px;
+  max-height:240px;overflow-y:auto;padding:2px;margin-bottom:14px}
+.page-chip{display:flex;align-items:center;justify-content:space-between;gap:6px;
+  background:var(--surf2);border:1.5px solid var(--brd);border-radius:8px;padding:8px 10px;
+  cursor:pointer;font-size:.76rem;font-weight:700}
+.page-chip:hover{border-color:var(--g)}
+.page-chip.picked{background:rgba(134,188,37,.14);border-color:var(--g);color:var(--txt)}
+.page-chip input{accent-color:var(--g);cursor:pointer}
+.empty-box{text-align:center;color:var(--txt2);font-size:.76rem;padding:22px 12px;
+  background:var(--surf2);border:1px solid var(--brd);border-radius:8px;margin-bottom:14px}
 .preview-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
-  padding:14px;text-align:center;min-height:260px;display:flex;flex-direction:column;
+  padding:14px;text-align:center;min-height:240px;display:flex;flex-direction:column;
   align-items:center;justify-content:center}
-#renderCanvas{max-width:100%;max-height:420px;height:auto;border:1px solid var(--brd);background:#fff}
+#renderCanvas{max-width:100%;max-height:400px;height:auto;border:1px solid var(--brd);background:#fff}
 .meta{margin-top:10px;font-size:.72rem;color:var(--txt2);line-height:1.5}
 .meta strong{color:var(--txt)}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
   color:var(--txt2);margin-bottom:5px}
-.field select,.field input[type="number"],.field input[type="text"]{
+.field select,.field input[type="text"]{
   width:100%;padding:8px 10px;border:1px solid var(--brd);
   border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.info-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:12px;font-size:.74rem;color:var(--txt2);line-height:1.6}
+.info-box strong{color:var(--txt)}
 .brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 16px;
   font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
@@ -97,9 +119,9 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
 
 <div class="wrap">
   <div class="card">
-    <div class="chd"><h2>Tool #16 — PDF to Image Converter (Export Pages as PNG or JPG)</h2></div>
+    <div class="chd"><h2>Tool #16 — PDF to Image Converter (Select Pages or Convert All)</h2></div>
     <div class="cbody">
-      <p class="note">Render PDF pages locally in your browser using PDF.js and download a single page or all pages as high-resolution PNG or JPG images with zero server uploads.</p>
+      <p class="note">Tick the pages you want to convert (or use <strong>Convert All Pages</strong>) to render high-resolution PNG or JPG images directly in your browser with zero server uploads.</p>
 
       <div class="grid2">
         <div>
@@ -109,28 +131,33 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
             <div class="dz-sub">PDF documents &middot; Rendered locally via PDF.js</div>
           </div>
 
+          <div class="sel-bar">
+            <div class="sel-title">Tick Pages to Convert: <strong id="selectedCountText">0 selected</strong></div>
+            <div class="sel-actions">
+              <button type="button" class="sbtn" id="selectAllBtn" disabled>Select All</button>
+              <button type="button" class="sbtn" id="clearSelBtn" disabled>Clear Ticks</button>
+            </div>
+          </div>
+
+          <div id="pageContainer">
+            <div class="empty-box">No PDF loaded yet. Select or drop a PDF above to tick pages.</div>
+          </div>
+
           <div class="preview-box">
             <canvas id="renderCanvas" width="480" height="320"></canvas>
             <div class="meta" id="renderMeta">
-              File: <strong id="docName">None selected</strong> &middot;
-              Pages: <strong id="docPages">0</strong> &middot;
-              Output: <strong id="imgDimText">—</strong>
+              Preview / Output: <strong id="imgDimText">—</strong>
             </div>
           </div>
 
           <div class="brow">
-            <button type="button" class="bp" id="dlCurrentBtn" disabled>Download Selected Page</button>
-            <button type="button" class="bs" id="dlAllBtn" disabled>Download All Pages</button>
-            <button type="button" class="bs" id="clearBtn" disabled>Clear File</button>
+            <button type="button" class="bp" id="convertSelectedBtn" disabled>Convert Selected Pages</button>
+            <button type="button" class="bs" id="convertAllBtn" disabled>Convert All Pages</button>
+            <button type="button" class="bs" id="clearFileBtn" disabled>Clear File</button>
           </div>
         </div>
 
         <div>
-          <div class="field">
-            <label for="pageNumInput">Page Number (1 to <span id="maxPageSpan">0</span>)</label>
-            <input type="number" id="pageNumInput" min="1" max="1" step="1" value="1" disabled/>
-          </div>
-
           <div class="field">
             <label for="scaleSelect">Render Scale / Resolution</label>
             <select id="scaleSelect">
@@ -152,6 +179,12 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);
           <div class="field">
             <label for="basePrefix">File Name Prefix</label>
             <input type="text" id="basePrefix" value="pdf-page" maxlength="100"/>
+          </div>
+
+          <div class="info-box">
+            <div>File: <strong id="docName">None selected</strong></div>
+            <div>Total Pages: <strong id="docPages">0</strong></div>
+            <div>Ticked Pages: <strong id="docSelected">0</strong></div>
           </div>
         </div>
       </div>
@@ -177,6 +210,8 @@ $(function () {
 
   let pdfDoc = null;
   let totalPages = 0;
+  let selectedPages = new Set();
+  let activePreviewPage = 1;
   let toastTimer = null;
 
   const canvas = document.getElementById("renderCanvas");
@@ -195,10 +230,40 @@ $(function () {
     return cleaned || "pdf-page";
   }
 
+  function syncButtonsAndCounts() {
+    const selCount = selectedPages.size;
+    const hasDoc = Boolean(pdfDoc && totalPages > 0);
+    $("#selectedCountText").text(selCount + " selected");
+    $("#docSelected").text(selCount);
+    $("#selectAllBtn, #clearSelBtn, #clearFileBtn, #convertAllBtn").prop("disabled", !hasDoc);
+    $("#convertSelectedBtn").prop("disabled", !hasDoc || selCount === 0);
+  }
+
+  function renderPageTickGrid() {
+    if (!pdfDoc || !totalPages) {
+      $("#pageContainer").html('<div class="empty-box">No PDF loaded yet. Select or drop a PDF above to tick pages.</div>');
+      syncButtonsAndCounts();
+      return;
+    }
+
+    let html = '<div class="page-grid">';
+    for (let p = 1; p <= totalPages; p++) {
+      const isPicked = selectedPages.has(p);
+      html +=
+        '<div class="page-chip' + (isPicked ? " picked" : "") + '" data-page="' + p + '">' +
+          '<span>Page ' + p + '</span>' +
+          '<input type="checkbox" class="page-chk" data-page="' + p + '"' + (isPicked ? " checked" : "") + '/>' +
+        '</div>';
+    }
+    html += '</div>';
+    $("#pageContainer").html(html);
+    syncButtonsAndCounts();
+  }
+
   async function renderPageToCanvas(pageNumber) {
     if (!pdfDoc) return;
     const clamped = Math.max(1, Math.min(totalPages, pageNumber));
-    $("#pageNumInput").val(clamped);
+    activePreviewPage = clamped;
 
     const scale = parseFloat($("#scaleSelect").val()) || 2;
     const page = await pdfDoc.getPage(clamped);
@@ -233,6 +298,28 @@ $(function () {
     document.body.removeChild(a);
   }
 
+  async function convertPagesList(pageNumbers, labelText) {
+    if (!pdfDoc || !pageNumbers || !pageNumbers.length) return;
+    try {
+      $("#convertSelectedBtn, #convertAllBtn, #selectAllBtn, #clearSelBtn").prop("disabled", true);
+      const prefix = sanitizePrefix($("#basePrefix").val());
+
+      for (let i = 0; i < pageNumbers.length; i++) {
+        const p = pageNumbers[i];
+        showToast("Converting page " + p + " (" + (i + 1) + " of " + pageNumbers.length + ")...");
+        await renderPageToCanvas(p);
+        downloadCurrentCanvas(prefix + "-" + p);
+        await new Promise(function (resolve) { setTimeout(resolve, 160); });
+      }
+
+      showToast("Converted " + pageNumbers.length + " " + labelText + " page(s) to image");
+    } catch (err) {
+      showToast("Error converting PDF pages.");
+    } finally {
+      syncButtonsAndCounts();
+    }
+  }
+
   async function loadPdfFile(file) {
     if (!file) return;
     const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
@@ -250,15 +337,15 @@ $(function () {
       const loadingTask = window.pdfjsLib.getDocument({ data: bytes });
       pdfDoc = await loadingTask.promise;
       totalPages = pdfDoc.numPages;
+      selectedPages = new Set([1]);
+      activePreviewPage = 1;
 
       const stem = (file.name || "document").replace(/\.pdf$/i, "");
       $("#docName").text(file.name || "document.pdf");
       $("#docPages").text(totalPages);
-      $("#maxPageSpan").text(totalPages);
-      $("#pageNumInput").prop("disabled", false).attr("max", totalPages).val(1);
       $("#basePrefix").val(stem + "-page");
-      $("#dlCurrentBtn, #dlAllBtn, #clearBtn").prop("disabled", false);
 
+      renderPageTickGrid();
       await renderPageToCanvas(1);
       showToast("Loaded PDF (" + totalPages + " page(s))");
     } catch (err) {
@@ -266,52 +353,66 @@ $(function () {
     }
   }
 
-  $("#pageNumInput, #scaleSelect, #fmtSelect").on("change input", async function () {
-    if (!pdfDoc) return;
-    const p = parseInt($("#pageNumInput").val(), 10) || 1;
-    await renderPageToCanvas(p);
-  });
+  $(document).on("click", ".page-chip", async function (e) {
+    const p = parseInt($(this).data("page"), 10);
+    if (!Number.isInteger(p) || !pdfDoc) return;
 
-  $("#dlCurrentBtn").on("click", async function () {
-    if (!pdfDoc) return;
-    const p = Math.max(1, Math.min(totalPages, parseInt($("#pageNumInput").val(), 10) || 1));
-    await renderPageToCanvas(p);
-    const prefix = sanitizePrefix($("#basePrefix").val());
-    downloadCurrentCanvas(prefix + "-" + p);
-    showToast("Downloaded page " + p);
-  });
-
-  $("#dlAllBtn").on("click", async function () {
-    if (!pdfDoc || !totalPages) return;
-    try {
-      $("#dlCurrentBtn, #dlAllBtn").prop("disabled", true);
-      const prefix = sanitizePrefix($("#basePrefix").val());
-      for (let p = 1; p <= totalPages; p++) {
-        showToast("Rendering page " + p + " of " + totalPages + "...");
-        await renderPageToCanvas(p);
-        downloadCurrentCanvas(prefix + "-" + p);
-        await new Promise(function (resolve) { setTimeout(resolve, 160); });
-      }
-      showToast("Downloaded all " + totalPages + " page image(s)");
-    } catch (err) {
-      showToast("Error exporting pages.");
-    } finally {
-      $("#dlCurrentBtn, #dlAllBtn").prop("disabled", !pdfDoc);
+    if ($(e.target).is("input[type='checkbox']")) {
+      if ($(e.target).is(":checked")) selectedPages.add(p);
+      else selectedPages.delete(p);
+    } else {
+      if (selectedPages.has(p)) selectedPages.delete(p);
+      else selectedPages.add(p);
     }
+
+    renderPageTickGrid();
+    await renderPageToCanvas(p);
   });
 
-  $("#clearBtn").on("click", function () {
+  $("#selectAllBtn").on("click", function () {
+    if (!totalPages) return;
+    selectedPages.clear();
+    for (let p = 1; p <= totalPages; p++) selectedPages.add(p);
+    renderPageTickGrid();
+    showToast("Selected all " + totalPages + " page(s)");
+  });
+
+  $("#clearSelBtn").on("click", function () {
+    selectedPages.clear();
+    renderPageTickGrid();
+    showToast("Cleared page ticks");
+  });
+
+  $("#scaleSelect, #fmtSelect").on("change", async function () {
+    if (!pdfDoc) return;
+    await renderPageToCanvas(activePreviewPage || 1);
+  });
+
+  $("#convertSelectedBtn").on("click", async function () {
+    if (!pdfDoc || selectedPages.size === 0) return;
+    const sortedPages = Array.from(selectedPages).sort(function (a, b) { return a - b; });
+    await convertPagesList(sortedPages, "selected");
+  });
+
+  $("#convertAllBtn").on("click", async function () {
+    if (!pdfDoc || !totalPages) return;
+    const allPages = [];
+    for (let p = 1; p <= totalPages; p++) allPages.push(p);
+    await convertPagesList(allPages, "total");
+  });
+
+  $("#clearFileBtn").on("click", function () {
     pdfDoc = null;
     totalPages = 0;
+    selectedPages.clear();
+    activePreviewPage = 1;
     canvas.width = 480;
     canvas.height = 320;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     $("#docName").text("None selected");
     $("#docPages").text("0");
-    $("#maxPageSpan").text("0");
     $("#imgDimText").text("—");
-    $("#pageNumInput").prop("disabled", true).val(1);
-    $("#dlCurrentBtn, #dlAllBtn, #clearBtn").prop("disabled", true);
+    renderPageTickGrid();
     showToast("Cleared PDF");
   });
 
