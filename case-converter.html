@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Case Converter — UPPERCASE, lowercase, Title Case &amp; Sentence case</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1040px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.case-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cbtn{background:var(--surf2);color:var(--txt);border:1px solid var(--brd);
+  border-radius:7px;padding:7px 12px;font-family:var(--ff);font-size:.76rem;
+  font-weight:700;cursor:pointer}
+.cbtn:hover{border-color:var(--g);background:rgba(134,188,37,.14)}
+textarea#caseText{
+  width:100%;min-height:240px;padding:12px;border:1px solid var(--brd);
+  border-radius:8px;background:var(--surf2);color:var(--txt);font-size:.86rem;
+  font-family:var(--ff);line-height:1.6;resize:vertical}
+.meta-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  font-size:.72rem;color:var(--txt2);margin-top:8px}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 16px;
+  font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:40px}
+.bp:hover{background:var(--gd)}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.78rem;font-weight:700;cursor:pointer;min-height:40px}
+.bs:hover{background:var(--surf2);color:var(--txt)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="case-converter.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Student Tools <em>| Case Converter</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #32 — Case Converter (UPPERCASE, lowercase, Title Case &amp; Sentence case)</h2></div>
+    <div class="cbody">
+      <p class="note">Transform text between UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case, and alternating case directly in your browser.</p>
+
+      <div class="case-bar">
+        <button type="button" class="cbtn" data-case="upper">UPPERCASE</button>
+        <button type="button" class="cbtn" data-case="lower">lowercase</button>
+        <button type="button" class="cbtn" data-case="title">Title Case</button>
+        <button type="button" class="cbtn" data-case="sentence">Sentence case</button>
+        <button type="button" class="cbtn" data-case="camel">camelCase</button>
+        <button type="button" class="cbtn" data-case="snake">snake_case</button>
+        <button type="button" class="cbtn" data-case="alt">aLtErNaTiNg</button>
+      </div>
+
+      <textarea id="caseText" placeholder="Type or paste text here, then click any case button above...">client-side browser tools run fast and privately.</textarea>
+
+      <div class="meta-row">
+        <span>Characters: <strong id="caseCharCount">0</strong></span>
+        <span>Words: <strong id="caseWordCount">0</strong></span>
+      </div>
+
+      <div class="brow">
+        <button type="button" class="bp" id="copyCaseBtn">Copy Converted Text</button>
+        <button type="button" class="bs" id="clearCaseBtn">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let toastTimer = null;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2100);
+  }
+
+  function updateStats() {
+    const val = $("#caseText").val() || "";
+    const trimmed = val.trim();
+    const words = trimmed ? trimmed.split(/\s+/).length : 0;
+    $("#caseCharCount").text(val.length.toLocaleString("en-IN"));
+    $("#caseWordCount").text(words.toLocaleString("en-IN"));
+  }
+
+  function toTitleCase(str) {
+    return str.toLowerCase().replace(/(^|[\s\-_/(\["'])([a-z\u00C0-\u024F])/g, function (_, sep, ch) {
+      return sep + ch.toUpperCase();
+    });
+  }
+
+  function toSentenceCase(str) {
+    const lower = str.toLowerCase();
+    return lower.replace(/(^\s*|[.!?]+\s+)([a-z\u00C0-\u024F])/g, function (_, lead, ch) {
+      return lead + ch.toUpperCase();
+    });
+  }
+
+  function toCamelCase(str) {
+    const tokens = str.replace(/[^A-Za-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
+    if (!tokens.length) return "";
+    return tokens.map(function (w, idx) {
+      const low = w.toLowerCase();
+      return idx === 0 ? low : low.charAt(0).toUpperCase() + low.slice(1);
+    }).join("");
+  }
+
+  function toSnakeCase(str) {
+    return str.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "").toLowerCase();
+  }
+
+  function toAlternating(str) {
+    let idx = 0;
+    return str.split("").map(function (ch) {
+      if (/[A-Za-z]/.test(ch)) {
+        const out = idx % 2 === 0 ? ch.toLowerCase() : ch.toUpperCase();
+        idx++;
+        return out;
+      }
+      return ch;
+    }).join("");
+  }
+
+  function convertText(mode) {
+    const cur = $("#caseText").val() || "";
+    if (!cur) {
+      showToast("Enter some text first");
+      return;
+    }
+
+    let next = cur;
+    if (mode === "upper") next = cur.toUpperCase();
+    else if (mode === "lower") next = cur.toLowerCase();
+    else if (mode === "title") next = toTitleCase(cur);
+    else if (mode === "sentence") next = toSentenceCase(cur);
+    else if (mode === "camel") next = toCamelCase(cur);
+    else if (mode === "snake") next = toSnakeCase(cur);
+    else if (mode === "alt") next = toAlternating(cur);
+
+    $("#caseText").val(next);
+    updateStats();
+    showToast("Converted to " + mode);
+  }
+
+  $(".cbtn").on("click", function () {
+    convertText($(this).data("case"));
+  });
+
+  $("#caseText").on("input change", updateStats);
+
+  $("#copyCaseBtn").on("click", function () {
+    const val = $("#caseText").val() || "";
+    if (!val) {
+      showToast("Nothing to copy");
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(val).then(function () {
+        showToast("Copied converted text");
+      }).catch(function () {
+        showToast("Clipboard permission blocked");
+      });
+    } else {
+      showToast("Clipboard API unavailable");
+    }
+  });
+
+  $("#clearCaseBtn").on("click", function () {
+    $("#caseText").val("");
+    updateStats();
+    showToast("Cleared text");
+  });
+
+  updateStats();
+});
+</script>
+</body>
+</html>
