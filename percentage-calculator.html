@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Percentage Calculator — Percentage, Increase/Decrease &amp; Marks</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+  --c-main:#00BFA5;--c-diff:#2563EB;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;
+        --c-main:#00F5D4;--c-diff:#60A5FA;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab-btn{background:var(--surf2);color:var(--txt2);border:1px solid var(--brd);
+  border-radius:8px;padding:8px 12px;font-family:var(--ff);font-size:.76rem;
+  font-weight:700;cursor:pointer}
+.tab-btn.active{background:rgba(134,188,37,.16);border-color:var(--g);color:var(--txt)}
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field input[type="number"]{
+  width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.84rem;font-family:var(--ff)}
+.res-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;display:flex;flex-direction:column;gap:10px}
+.kpi{background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:12px}
+.kpi-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--txt2)}
+.kpi-val{font-size:1.22rem;font-weight:800;color:var(--txt);margin-top:3px;word-break:break-word}
+.kpi-val.main{color:var(--c-main)}
+.kpi-val.sub{color:var(--c-diff)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover{background:var(--surf2);color:var(--txt)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="percentage-calculator.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Calculators <em>| Percentage</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #23 — Percentage Calculator (Percentage, Change, Marks &amp; Ratio)</h2></div>
+    <div class="cbody">
+      <p class="note">Switch modes to calculate percentage of a value, percentage change (increase/decrease), exam marks percentage, or convert a two-part ratio into percentages.</p>
+
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab-btn active" data-mode="of">X% of Y</button>
+        <button type="button" class="tab-btn" data-mode="change">% Increase / Decrease</button>
+        <button type="button" class="tab-btn" data-mode="marks">Marks Percentage</button>
+        <button type="button" class="tab-btn" data-mode="ratio">Ratio to %</button>
+      </div>
+
+      <div class="grid2">
+        <div id="inputsPanel">
+          <!-- Mode 1: X% of Y -->
+          <div class="mode-fields" data-mode="of">
+            <div class="field">
+              <label for="pctOfRate">Percentage (X %)</label>
+              <input type="number" id="pctOfRate" step="any" value="18"/>
+            </div>
+            <div class="field">
+              <label for="pctOfBase">Base Value (Y)</label>
+              <input type="number" id="pctOfBase" step="any" value="2500"/>
+            </div>
+          </div>
+
+          <!-- Mode 2: % Increase / Decrease -->
+          <div class="mode-fields" data-mode="change" style="display:none;">
+            <div class="field">
+              <label for="chgFrom">Original Value</label>
+              <input type="number" id="chgFrom" step="any" value="1200"/>
+            </div>
+            <div class="field">
+              <label for="chgTo">New Value</label>
+              <input type="number" id="chgTo" step="any" value="1500"/>
+            </div>
+          </div>
+
+          <!-- Mode 3: Marks Percentage -->
+          <div class="mode-fields" data-mode="marks" style="display:none;">
+            <div class="field">
+              <label for="marksObt">Marks Obtained</label>
+              <input type="number" id="marksObt" min="0" step="any" value="435"/>
+            </div>
+            <div class="field">
+              <label for="marksMax">Maximum Marks</label>
+              <input type="number" id="marksMax" min="0.0001" step="any" value="500"/>
+            </div>
+          </div>
+
+          <!-- Mode 4: Ratio to % -->
+          <div class="mode-fields" data-mode="ratio" style="display:none;">
+            <div class="field">
+              <label for="ratioA">First Part (A)</label>
+              <input type="number" id="ratioA" min="0" step="any" value="3"/>
+            </div>
+            <div class="field">
+              <label for="ratioB">Second Part (B)</label>
+              <input type="number" id="ratioB" min="0" step="any" value="2"/>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="calcPctBtn">Calculate</button>
+            <button type="button" class="bs" id="resetPctBtn">Reset Mode</button>
+          </div>
+        </div>
+
+        <div class="res-box">
+          <div class="kpi">
+            <div class="kpi-lbl" id="primaryLbl">Result</div>
+            <div class="kpi-val main" id="primaryOut">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl" id="secondaryLbl">Details</div>
+            <div class="kpi-val sub" id="secondaryOut">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let activeMode = "of";
+  let toastTimer = null;
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2100);
+  }
+
+  function fmtNum(n, dec) {
+    const d = typeof dec === "number" ? dec : 2;
+    if (!Number.isFinite(n)) return "0";
+    return Number(n).toLocaleString("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: d
+    });
+  }
+
+  function computePct() {
+    if (activeMode === "of") {
+      const x = parseFloat($("#pctOfRate").val()) || 0;
+      const y = parseFloat($("#pctOfBase").val()) || 0;
+      const val = (x / 100) * y;
+      $("#primaryLbl").text(fmtNum(x, 4) + "% of " + fmtNum(y, 4));
+      $("#primaryOut").text(fmtNum(val, 4));
+      $("#secondaryLbl").text("Base + Result / Base − Result");
+      $("#secondaryOut").text(fmtNum(y + val, 2) + " / " + fmtNum(y - val, 2));
+    } else if (activeMode === "change") {
+      const fromVal = parseFloat($("#chgFrom").val()) || 0;
+      const toVal = parseFloat($("#chgTo").val()) || 0;
+      const diff = toVal - fromVal;
+      $("#primaryLbl").text("Percentage Change");
+      $("#secondaryLbl").text("Absolute Difference");
+      if (fromVal === 0) {
+        $("#primaryOut").text(toVal === 0 ? "0%" : (toVal > 0 ? "+∞%" : "−∞%"));
+        $("#secondaryOut").text((diff >= 0 ? "+" : "") + fmtNum(diff, 4));
+        return;
+      }
+      const pct = (diff / Math.abs(fromVal)) * 100;
+      const sign = pct > 0 ? "+" : "";
+      const tag = pct > 0 ? " (Increase)" : (pct < 0 ? " (Decrease)" : " (No Change)");
+      $("#primaryOut").text(sign + fmtNum(pct, 2) + "%" + tag);
+      $("#secondaryOut").text((diff >= 0 ? "+" : "") + fmtNum(diff, 4));
+    } else if (activeMode === "marks") {
+      const obt = parseFloat($("#marksObt").val()) || 0;
+      const max = parseFloat($("#marksMax").val()) || 0;
+      $("#primaryLbl").text("Percentage Scored");
+      $("#secondaryLbl").text("Marks Remaining");
+      if (max <= 0) {
+        $("#primaryOut").text("—");
+        $("#secondaryOut").text("—");
+        return;
+      }
+      const pct = (obt / max) * 100;
+      $("#primaryOut").text(fmtNum(pct, 2) + "%");
+      $("#secondaryOut").text(fmtNum(max - obt, 2) + " / " + fmtNum(max, 2));
+    } else if (activeMode === "ratio") {
+      const a = Math.max(0, parseFloat($("#ratioA").val()) || 0);
+      const b = Math.max(0, parseFloat($("#ratioB").val()) || 0);
+      const sum = a + b;
+      $("#primaryLbl").text("Ratio Split (%)");
+      $("#secondaryLbl").text("Total Parts");
+      if (sum <= 0) {
+        $("#primaryOut").text("0% : 0%");
+        $("#secondaryOut").text("0");
+        return;
+      }
+      const pA = (a / sum) * 100;
+      const pB = (b / sum) * 100;
+      $("#primaryOut").text(fmtNum(pA, 2) + "% : " + fmtNum(pB, 2) + "%");
+      $("#secondaryOut").text(fmtNum(sum, 4));
+    }
+  }
+
+  $(".tab-btn").on("click", function () {
+    activeMode = $(this).data("mode");
+    $(".tab-btn").removeClass("active");
+    $(this).addClass("active");
+    $(".mode-fields").hide();
+    $('.mode-fields[data-mode="' + activeMode + '"]').show();
+    computePct();
+  });
+
+  $("#inputsPanel").on("input change", "input[type='number']", computePct);
+
+  $("#calcPctBtn").on("click", function () {
+    computePct();
+    showToast("Calculated");
+  });
+
+  $("#resetPctBtn").on("click", function () {
+    if (activeMode === "of") { $("#pctOfRate").val(18); $("#pctOfBase").val(2500); }
+    else if (activeMode === "change") { $("#chgFrom").val(1200); $("#chgTo").val(1500); }
+    else if (activeMode === "marks") { $("#marksObt").val(435); $("#marksMax").val(500); }
+    else if (activeMode === "ratio") { $("#ratioA").val(3); $("#ratioB").val(2); }
+    computePct();
+    showToast("Reset values");
+  });
+
+  computePct();
+});
+</script>
+</body>
+</html>
