@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OmniTools Hub — 50 Free Browser-Based Photo, PDF, Calculator & Utility Tools</title>
+  <title>OmniTools Hub — Free Browser-Based Photo, PDF, Calculator & Utility Tools</title>
   <meta name="description" content="Free, privacy-first browser-based utilities for India and international users. Passport Photo Maker, PDF tools, Indian & global calculators, student tools, and offline mini-games." />
   
   <!-- jQuery CDN -->
@@ -23,7 +23,7 @@
       --shadow-hover: 0 6px 16px rgba(37, 99, 235, 0.12);
     }
 
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -194,9 +194,7 @@
     }
 
     .cat-count {
-      font-size: 11px;
-      color: var(--text-secondary);
-      font-weight: 500;
+      display: none;
     }
 
     /* Tools Directory Area (Visible immediately above the fold) */
@@ -451,7 +449,7 @@
           type="text"
           id="toolSearchInput"
           class="search-input"
-          placeholder="Search 50 tools (Passport, PDF, GST, 2048)..."
+          placeholder="Search tools (Passport, PDF, GST, 2048)..."
           autocomplete="off"
         />
       </div>
@@ -463,7 +461,6 @@
         <span class="cat-icon" style="background:#EFF6FF; color:#1D4ED8;">📷</span>
         <div class="cat-meta">
           <div class="cat-title">Photo Tools</div>
-          <div class="cat-count">10 tools</div>
         </div>
       </button>
 
@@ -471,7 +468,6 @@
         <span class="cat-icon" style="background:#FEF2F2; color:#DC2626;">📄</span>
         <div class="cat-meta">
           <div class="cat-title">PDF Tools</div>
-          <div class="cat-count">10 tools</div>
         </div>
       </button>
 
@@ -479,7 +475,6 @@
         <span class="cat-icon" style="background:#F0FDF4; color:#15803D;">🧮</span>
         <div class="cat-meta">
           <div class="cat-title">Calculators</div>
-          <div class="cat-count">10 tools</div>
         </div>
       </button>
 
@@ -487,7 +482,6 @@
         <span class="cat-icon" style="background:#FFFBEB; color:#B45309;">🎓</span>
         <div class="cat-meta">
           <div class="cat-title">Student Tools</div>
-          <div class="cat-count">8 tools</div>
         </div>
       </button>
 
@@ -495,7 +489,6 @@
         <span class="cat-icon" style="background:#F5F3FF; color:#6D28D9;">🎮</span>
         <div class="cat-meta">
           <div class="cat-title">Mini Games</div>
-          <div class="cat-count">8 games</div>
         </div>
       </button>
 
@@ -503,7 +496,6 @@
         <span class="cat-icon" style="background:#ECFEFF; color:#0E7490;">🔧</span>
         <div class="cat-meta">
           <div class="cat-title">Utilities</div>
-          <div class="cat-count">4 tools</div>
         </div>
       </button>
     </nav>
@@ -544,8 +536,6 @@
         </div>
         <button type="button" class="btn-close-drawer" id="closePassportModal">Close &times;</button>
       </div>
-
-      <div class="master-studio-bar" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#f0f9e8;border:1px solid #b7e187;border-radius:10px;padding:12px 16px;margin-bottom:14px;">
 
       <div class="passport-controls">
         <div class="control-group">
@@ -610,7 +600,7 @@
         }
       });
 
-      // 2. Complete 50-Tool Catalog
+      // 2. Complete Tool Catalog
       const catalog = {
         photo: {
           title: "Photo & Image Utilities (10 Tools — Flagship Category)",
@@ -628,7 +618,7 @@
           ]
         },
         pdf: {
-          title: "PDF & Document Utilities (10 Tools — PDF-lib & PDF.js Powered)",
+          title: "PDF & Document Utilities (9 Tools — PDF-lib & PDF.js Powered)",
           tools: [
             { num: 11, name: "PDF Merger", desc: "Combine multiple PDF documents in order with zero server uploads.", status: "Priority 1" },
             { num: 12, name: "PDF Splitter", desc: "Split a PDF into individual pages or custom page ranges.", status: "Planned" },
@@ -638,8 +628,7 @@
             { num: 16, name: "PDF to Image Converter", desc: "Render PDF pages and export as high-res JPG or PNG.", status: "Planned" },
             { num: 17, name: "Image to PDF Converter", desc: "Convert JPG/PNG photos into a single print-ready PDF.", status: "Priority 1" },
             { num: 18, name: "PDF Page Extractor", desc: "Extract selected pages into a brand-new PDF document.", status: "Planned" },
-            { num: 19, name: "PDF Metadata Viewer", desc: "Inspect author, creation date, page size and PDF properties.", status: "Planned" },
-            { num: 20, name: "PDF Password Protection Tool", desc: "Add or manage PDF encryption directly in your browser.", status: "Planned" }
+            { num: 19, name: "PDF Metadata Viewer", desc: "Inspect author, creation date, page size and PDF properties.", status: "Planned" }
           ]
         },
         calculators: {
@@ -745,7 +734,7 @@
         }
       });
 
-      // Live Search Across All 50 Tools
+      // Live Search Across All Tools
       $("#toolSearchInput").on("input", function () {
         const query = $(this).val().toLowerCase().trim();
         $(".cat-pill").removeClass("active");
@@ -778,12 +767,12 @@
         $(".cat-pill").removeClass("active");
       });
 
-// Launch Tool Action
+      // Launch Tool Action
       $(document).on("click", ".tool-launch-btn", function () {
         const action = $(this).data("action");
         const toolName = $(this).data("name");
 
-      if (action === "passport") {
+        if (action === "passport") {
           window.location.href = "passport-photo-studio.html";
         } else if (toolName === "Photo & Signature Resizer") {
           window.location.href = "photo-signature-resizer.html";
@@ -803,35 +792,25 @@
           window.location.href = "image-rotator-flipper.html";
         } else if (toolName === "Photo Contact Sheet Maker") {
           window.location.href = "photo-contact-sheet-maker.html";
-        }
-        else if (toolName === "PDF Merger") {
+        } else if (toolName === "PDF Merger") {
           window.location.href = "pdf-merger.html";
-        }
-        else if (toolName === "PDF Splitter") {
+        } else if (toolName === "PDF Splitter") {
           window.location.href = "pdf-splitter.html";
-        }
-        else if (toolName === "PDF Page Rotator") {
+        } else if (toolName === "PDF Page Rotator") {
           window.location.href = "pdf-page-rotator.html";
-        }
-        else if (toolName === "PDF Page Reorderer") {
+        } else if (toolName === "PDF Page Reorderer") {
           window.location.href = "pdf-page-reorderer.html";
-        }
-        else if (toolName === "PDF Page Deleter") {
+        } else if (toolName === "PDF Page Deleter") {
           window.location.href = "pdf-page-deleter.html";
-        }
-        else if (toolName === "PDF to Image Converter") {
+        } else if (toolName === "PDF to Image Converter") {
           window.location.href = "pdf-to-image-converter.html";
-        }
-        else if (toolName === "Image to PDF Converter") {
+        } else if (toolName === "Image to PDF Converter") {
           window.location.href = "image-to-pdf-converter.html";
-        }
-        else if (toolName === "PDF Page Extractor") {
+        } else if (toolName === "PDF Page Extractor") {
           window.location.href = "pdf-page-extractor.html";
-        }
-        else if (toolName === "PDF Metadata Viewer") {
+        } else if (toolName === "PDF Metadata Viewer") {
           window.location.href = "pdf-metadata-viewer.html";
-        }
-        else {
+        } else {
           alert(toolName + " - Ready to build next in our modular HTML/jQuery structure!");
         }
       });
