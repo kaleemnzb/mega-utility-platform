@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Unit Converter — Length, Weight, Temperature, Area, Speed &amp; Volume</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+  --c-out:#00BFA5;--c-alt:#2563EB;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;
+        --c-out:#00F5D4;--c-alt:#60A5FA;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab-btn{background:var(--surf2);color:var(--txt2);border:1px solid var(--brd);
+  border-radius:8px;padding:7px 12px;font-family:var(--ff);font-size:.75rem;
+  font-weight:700;cursor:pointer}
+.tab-btn.active{background:rgba(134,188,37,.16);border-color:var(--g);color:var(--txt)}
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field input[type="number"],.field select{
+  width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.84rem;font-family:var(--ff)}
+.res-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:14px;display:flex;flex-direction:column;gap:10px}
+.kpi{background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:12px}
+.kpi-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--txt2)}
+.kpi-val{font-size:1.22rem;font-weight:800;color:var(--txt);margin-top:3px;word-break:break-word}
+.kpi-val.out{color:var(--c-out)}
+.kpi-val.alt{color:var(--c-alt);font-size:.92rem}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover{background:var(--gd)}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover{background:var(--surf2);color:var(--txt)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="unit-converter.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">Calculators <em>| Unit Converter</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #27 — Unit Converter (Length, Weight, Temperature, Area, Speed &amp; Volume)</h2></div>
+    <div class="cbody">
+      <p class="note">Convert across Length, Weight, Temperature, Area, Speed, and Volume instantaneously in your browser with zero server calls.</p>
+
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab-btn active" data-cat="length">Length</button>
+        <button type="button" class="tab-btn" data-cat="weight">Weight</button>
+        <button type="button" class="tab-btn" data-cat="temperature">Temperature</button>
+        <button type="button" class="tab-btn" data-cat="area">Area</button>
+        <button type="button" class="tab-btn" data-cat="speed">Speed</button>
+        <button type="button" class="tab-btn" data-cat="volume">Volume</button>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <div class="field">
+            <label for="valInput">Input Value</label>
+            <input type="number" id="valInput" step="any" value="100"/>
+          </div>
+
+          <div class="field">
+            <label for="fromUnitSelect">From Unit</label>
+            <select id="fromUnitSelect"></select>
+          </div>
+
+          <div class="field">
+            <label for="toUnitSelect">To Unit</label>
+            <select id="toUnitSelect"></select>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="swapUnitBtn">Swap Units</button>
+            <button type="button" class="bs" id="copyUnitResBtn">Copy Result</button>
+          </div>
+        </div>
+
+        <div class="res-box">
+          <div class="kpi">
+            <div class="kpi-lbl">Converted Value</div>
+            <div class="kpi-val out" id="convertedOut">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Conversion Summary</div>
+            <div class="kpi-val alt" id="summaryOut">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  const UNIT_SETS = {
+    length: {
+      base: "m",
+      units: {
+        mm: { label: "Millimetre (mm)", toBase: 0.001 },
+        cm: { label: "Centimetre (cm)", toBase: 0.01 },
+        m: { label: "Metre (m)", toBase: 1 },
+        km: { label: "Kilometre (km)", toBase: 1000 },
+        in: { label: "Inch (in)", toBase: 0.0254 },
+        ft: { label: "Foot (ft)", toBase: 0.3048 },
+        yd: { label: "Yard (yd)", toBase: 0.9144 },
+        mi: { label: "Mile (mi)", toBase: 1609.344 }
+      }
+    },
+    weight: {
+      base: "kg",
+      units: {
+        mg: { label: "Milligram (mg)", toBase: 0.000001 },
+        g: { label: "Gram (g)", toBase: 0.001 },
+        kg: { label: "Kilogram (kg)", toBase: 1 },
+        q: { label: "Quintal (q)", toBase: 100 },
+        t: { label: "Metric Ton (t)", toBase: 1000 },
+        lb: { label: "Pound (lb)", toBase: 0.45359237 },
+        oz: { label: "Ounce (oz)", toBase: 0.028349523125 }
+      }
+    },
+    temperature: {
+      isTemp: true,
+      units: {
+        c: { label: "Celsius (°C)" },
+        f: { label: "Fahrenheit (°F)" },
+        k: { label: "Kelvin (K)" }
+      }
+    },
+    area: {
+      base: "sqm",
+      units: {
+        sqmm: { label: "Sq. Millimetre (mm²)", toBase: 0.000001 },
+        sqcm: { label: "Sq. Centimetre (cm²)", toBase: 0.0001 },
+        sqm: { label: "Sq. Metre (m²)", toBase: 1 },
+        sqkm: { label: "Sq. Kilometre (km²)", toBase: 1000000 },
+        sqft: { label: "Sq. Foot (ft²)", toBase: 0.09290304 },
+        sqyd: { label: "Sq. Yard (yd²)", toBase: 0.83612736 },
+        acre: { label: "Acre", toBase: 4046.8564224 },
+        ha: { label: "Hectare (ha)", toBase: 10000 }
+      }
+    },
+    speed: {
+      base: "mps",
+      units: {
+        mps: { label: "Metre / Second (m/s)", toBase: 1 },
+        kmph: { label: "Kilometre / Hour (km/h)", toBase: 1000 / 3600 },
+        mph: { label: "Miles / Hour (mph)", toBase: 1609.344 / 3600 },
+        knot: { label: "Knot (kn)", toBase: 1852 / 3600 }
+      }
+    },
+    volume: {
+      base: "l",
+      units: {
+        ml: { label: "Millilitre (mL)", toBase: 0.001 },
+        l: { label: "Litre (L)", toBase: 1 },
+        cum: { label: "Cubic Metre (m³)", toBase: 1000 },
+        floz: { label: "US Fluid Ounce (fl oz)", toBase: 0.0295735295625 },
+        cup: { label: "Metric Cup (250 mL)", toBase: 0.25 },
+        gal: { label: "US Gallon (gal)", toBase: 3.785411784 }
+      }
+    }
+  };
+
+  let activeCat = "length";
+  let lastResultText = "0";
+  let toastTimer = null;
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2100);
+  }
+
+  function fmtNum(n) {
+    if (!Number.isFinite(n)) return "—";
+    const abs = Math.abs(n);
+    const maxDec = abs > 0 && abs < 0.01 ? 6 : 4;
+    return Number(n).toLocaleString("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: maxDec
+    });
+  }
+
+  function convertTemp(val, fromKey, toKey) {
+    let celsius = val;
+    if (fromKey === "f") celsius = ((val - 32) * 5) / 9;
+    else if (fromKey === "k") celsius = val - 273.15;
+
+    if (toKey === "c") return celsius;
+    if (toKey === "f") return (celsius * 9) / 5 + 32;
+    if (toKey === "k") return celsius + 273.15;
+    return celsius;
+  }
+
+  function populateUnits(catKey) {
+    const setObj = UNIT_SETS[catKey];
+    const keys = Object.keys(setObj.units);
+    let opts = "";
+    keys.forEach(function (k) {
+      opts += '<option value="' + k + '">' + setObj.units[k].label + "</option>";
+    });
+    $("#fromUnitSelect, #toUnitSelect").html(opts);
+    $("#fromUnitSelect").val(keys[0]);
+    $("#toUnitSelect").val(keys[Math.min(1, keys.length - 1)]);
+  }
+
+  function computeConversion() {
+    const raw = parseFloat($("#valInput").val());
+    const val = Number.isFinite(raw) ? raw : 0;
+    const fromKey = $("#fromUnitSelect").val();
+    const toKey = $("#toUnitSelect").val();
+    const setObj = UNIT_SETS[activeCat];
+    if (!setObj || !setObj.units[fromKey] || !setObj.units[toKey]) return;
+
+    let outVal = 0;
+    if (setObj.isTemp) {
+      outVal = convertTemp(val, fromKey, toKey);
+    } else {
+      const baseVal = val * setObj.units[fromKey].toBase;
+      outVal = baseVal / setObj.units[toKey].toBase;
+    }
+
+    const formattedOut = fmtNum(outVal);
+    lastResultText = formattedOut;
+    $("#convertedOut").text(formattedOut);
+    $("#summaryOut").text(
+      fmtNum(val) + " " + setObj.units[fromKey].label + " = " + formattedOut + " " + setObj.units[toKey].label
+    );
+  }
+
+  $(".tab-btn").on("click", function () {
+    activeCat = $(this).data("cat");
+    $(".tab-btn").removeClass("active");
+    $(this).addClass("active");
+    populateUnits(activeCat);
+    computeConversion();
+  });
+
+  $("#valInput, #fromUnitSelect, #toUnitSelect").on("input change", computeConversion);
+
+  $("#swapUnitBtn").on("click", function () {
+    const a = $("#fromUnitSelect").val();
+    const b = $("#toUnitSelect").val();
+    $("#fromUnitSelect").val(b);
+    $("#toUnitSelect").val(a);
+    computeConversion();
+    showToast("Swapped units");
+  });
+
+  $("#copyUnitResBtn").on("click", function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(lastResultText).then(function () {
+        showToast("Copied converted value");
+      }).catch(function () {
+        showToast("Clipboard permission blocked");
+      });
+    } else {
+      showToast("Clipboard unavailable");
+    }
+  });
+
+  populateUnits(activeCat);
+  computeConversion();
+});
+</script>
+</body>
+</html>
