@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDF Page Extractor — Extract Selected Pages into a New PDF</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1040px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:18px 14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.sel-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  margin-bottom:10px}
+.sel-title{font-size:.74rem;font-weight:700;color:var(--txt2)}
+.sel-title strong{color:var(--txt)}
+.sel-actions{display:flex;gap:6px}
+.sbtn{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:6px;
+  padding:5px 10px;font-family:var(--ff);font-size:.72rem;font-weight:700;cursor:pointer}
+.sbtn:hover:not(:disabled){background:var(--surf2);color:var(--txt);border-color:var(--g)}
+.sbtn:disabled{opacity:.4;cursor:not-allowed}
+.page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:8px;
+  max-height:360px;overflow-y:auto;padding:2px}
+.page-chip{display:flex;align-items:center;justify-content:space-between;gap:6px;
+  background:var(--surf2);border:1.5px solid var(--brd);border-radius:8px;padding:8px 10px;
+  cursor:pointer;font-size:.76rem;font-weight:700}
+.page-chip:hover{border-color:var(--g)}
+.page-chip.picked{background:rgba(134,188,37,.14);border-color:var(--g);color:var(--txt)}
+.page-chip input{accent-color:var(--g);cursor:pointer}
+.empty-box{text-align:center;color:var(--txt2);font-size:.76rem;padding:24px 12px;
+  background:var(--surf2);border:1px solid var(--brd);border-radius:8px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  color:var(--txt2);margin-bottom:5px}
+.field input[type="text"]{width:100%;padding:8px 10px;border:1px solid var(--brd);
+  border-radius:7px;background:var(--surf2);color:var(--txt);font-size:.8rem;font-family:var(--ff)}
+.apply-row{display:flex;gap:6px;margin-top:6px}
+.info-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  padding:12px;font-size:.74rem;color:var(--txt2);line-height:1.6}
+.info-box strong{color:var(--txt)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover:not(:disabled){background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="pdf-page-extractor.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">PDF Tools <em>| PDF Page Extractor</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #18 — PDF Page Extractor (Extract Selected Pages into a New PDF)</h2></div>
+    <div class="cbody">
+      <p class="note">Tick the pages you want to extract (or apply a page range like <code>1, 3-5</code>) and export them into a new PDF file directly in your browser with zero server uploads.</p>
+
+      <div class="grid2">
+        <div>
+          <input type="file" id="fileInput" accept="application/pdf,.pdf"/>
+          <div class="dz" id="dropZone" role="button" tabindex="0">
+            <div class="dz-title">Click or drag &amp; drop a PDF file</div>
+            <div class="dz-sub">PDF documents &middot; Zero server uploads</div>
+          </div>
+
+          <div class="sel-bar">
+            <div class="sel-title">Selected Pages: <strong id="selectedCountText">0</strong></div>
+            <div class="sel-actions">
+              <button type="button" class="sbtn" id="selectAllBtn" disabled>Select All</button>
+              <button type="button" class="sbtn" id="clearSelBtn" disabled>Clear Ticks</button>
+            </div>
+          </div>
+
+          <div id="pageContainer">
+            <div class="empty-box">No PDF loaded yet. Select or drop a PDF above to tick pages to extract.</div>
+          </div>
+
+          <div class="brow">
+            <button type="button" class="bp" id="extractBtn" disabled>Extract &amp; Download PDF</button>
+            <button type="button" class="bs" id="clearFileBtn" disabled>Clear File</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label for="rangeInput">Tick Pages by Number / Range</label>
+            <input type="text" id="rangeInput" placeholder="e.g. 1, 3-5"/>
+            <div class="apply-row">
+              <button type="button" class="bs" id="addRangeBtn" disabled>Add Range</button>
+              <button type="button" class="bs" id="removeRangeBtn" disabled>Untick Range</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="outFileName">Output File Name</label>
+            <input type="text" id="outFileName" value="extracted-pages" maxlength="100"/>
+          </div>
+
+          <div class="info-box">
+            <div>File: <strong id="docName">None selected</strong></div>
+            <div>Total Pages: <strong id="docPages">0</strong></div>
+            <div>Pages to Extract: <strong id="docExtractCount">0</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let pdfBytes = null;
+  let totalPages = 0;
+  let extractSet = new Set();
+  let toastTimer = null;
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function sanitizeName(str, fallback) {
+    const cleaned = (str || fallback || "extracted-pages")
+      .trim()
+      .replace(/\.pdf$/i, "")
+      .replace(/[^a-zA-Z0-9._-]+/g, "-");
+    return cleaned || fallback || "extracted-pages";
+  }
+
+  function parsePageRanges(inputStr, maxPages) {
+    const indices = [];
+    const seen = new Set();
+    const parts = (inputStr || "").split(",");
+
+    for (const rawPart of parts) {
+      const part = rawPart.trim();
+      if (!part) continue;
+
+      if (part.indexOf("-") !== -1) {
+        const bounds = part.split("-");
+        if (bounds.length !== 2) return null;
+        const start = parseInt(bounds[0].trim(), 10);
+        const end = parseInt(bounds[1].trim(), 10);
+        if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end > maxPages || start > end) {
+          return null;
+        }
+        for (let p = start; p <= end; p++) {
+          const idx = p - 1;
+          if (!seen.has(idx)) {
+            seen.add(idx);
+            indices.push(idx);
+          }
+        }
+      } else {
+        const pageNum = parseInt(part, 10);
+        if (!Number.isInteger(pageNum) || pageNum < 1 || pageNum > maxPages) {
+          return null;
+        }
+        const idx = pageNum - 1;
+        if (!seen.has(idx)) {
+          seen.add(idx);
+          indices.push(idx);
+        }
+      }
+    }
+
+    return indices.length ? indices : null;
+  }
+
+  function syncControls() {
+    const count = extractSet.size;
+    const hasDoc = Boolean(pdfBytes && totalPages > 0);
+    $("#selectedCountText").text(count);
+    $("#docExtractCount").text(count);
+    $("#selectAllBtn, #clearSelBtn, #addRangeBtn, #removeRangeBtn, #clearFileBtn").prop("disabled", !hasDoc);
+    $("#extractBtn").prop("disabled", !hasDoc || count === 0);
+  }
+
+  function renderPageChips() {
+    if (!pdfBytes || !totalPages) {
+      $("#pageContainer").html('<div class="empty-box">No PDF loaded yet. Select or drop a PDF above to tick pages to extract.</div>');
+      syncControls();
+      return;
+    }
+
+    let html = '<div class="page-grid">';
+    for (let i = 0; i < totalPages; i++) {
+      const pageNum = i + 1;
+      const isPicked = extractSet.has(i);
+      html +=
+        '<div class="page-chip' + (isPicked ? " picked" : "") + '" data-idx="' + i + '">' +
+          '<span>Page ' + pageNum + '</span>' +
+          '<input type="checkbox" class="ext-chk" data-idx="' + i + '"' + (isPicked ? " checked" : "") + '/>' +
+        '</div>';
+    }
+    html += '</div>';
+    $("#pageContainer").html(html);
+    syncControls();
+  }
+
+  async function loadPdfFile(file) {
+    if (!file) return;
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+    if (!isPdf) {
+      showToast("Please select a valid PDF file.");
+      return;
+    }
+    if (!window.PDFLib || !window.PDFLib.PDFDocument) {
+      showToast("PDF library not loaded. Check CDN connection.");
+      return;
+    }
+
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const doc = await window.PDFLib.PDFDocument.load(bytes);
+      pdfBytes = bytes;
+      totalPages = doc.getPageCount();
+      extractSet = new Set([0]);
+
+      const stem = (file.name || "document").replace(/\.pdf$/i, "");
+      $("#docName").text(file.name || "document.pdf");
+      $("#docPages").text(totalPages);
+      $("#outFileName").val(stem + "-extracted");
+      renderPageChips();
+      showToast("Loaded PDF with " + totalPages + " page(s)");
+    } catch (err) {
+      showToast("Unable to read PDF (it may be encrypted or damaged).");
+    }
+  }
+
+  $(document).on("click", ".page-chip", function (e) {
+    const idx = parseInt($(this).data("idx"), 10);
+    if (!Number.isInteger(idx)) return;
+    if ($(e.target).is("input[type='checkbox']")) {
+      if ($(e.target).is(":checked")) extractSet.add(idx);
+      else extractSet.delete(idx);
+    } else {
+      if (extractSet.has(idx)) extractSet.delete(idx);
+      else extractSet.add(idx);
+    }
+    renderPageChips();
+  });
+
+  $("#selectAllBtn").on("click", function () {
+    if (!totalPages) return;
+    extractSet.clear();
+    for (let i = 0; i < totalPages; i++) extractSet.add(i);
+    renderPageChips();
+    showToast("Selected all " + totalPages + " page(s)");
+  });
+
+  $("#clearSelBtn").on("click", function () {
+    extractSet.clear();
+    renderPageChips();
+    showToast("Cleared page ticks");
+  });
+
+  $("#addRangeBtn").on("click", function () {
+    if (!totalPages) return;
+    const parsed = parsePageRanges($("#rangeInput").val(), totalPages);
+    if (!parsed) {
+      showToast("Enter valid page numbers/ranges between 1 and " + totalPages + ".");
+      return;
+    }
+    parsed.forEach(function (idx) { extractSet.add(idx); });
+    renderPageChips();
+    showToast("Added " + parsed.length + " page(s) to extraction list");
+  });
+
+  $("#removeRangeBtn").on("click", function () {
+    if (!totalPages) return;
+    const parsed = parsePageRanges($("#rangeInput").val(), totalPages);
+    if (!parsed) {
+      showToast("Enter valid page numbers/ranges between 1 and " + totalPages + ".");
+      return;
+    }
+    parsed.forEach(function (idx) { extractSet.delete(idx); });
+    renderPageChips();
+    showToast("Unticked " + parsed.length + " page(s)");
+  });
+
+  $("#clearFileBtn").on("click", function () {
+    pdfBytes = null;
+    totalPages = 0;
+    extractSet.clear();
+    $("#docName").text("None selected");
+    $("#docPages").text("0");
+    renderPageChips();
+    showToast("Cleared PDF selection");
+  });
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files[0]) loadPdfFile(dt.files[0]);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files[0]) {
+      loadPdfFile(this.files[0]);
+      $(this).val("");
+    }
+  });
+
+  $("#extractBtn").on("click", async function () {
+    if (!pdfBytes || !totalPages || extractSet.size === 0) return;
+    const orderedIndices = Array.from(extractSet).sort(function (a, b) { return a - b; });
+
+    try {
+      $("#extractBtn").prop("disabled", true).text("Extracting...");
+      const { PDFDocument } = window.PDFLib;
+      const srcDoc = await PDFDocument.load(pdfBytes);
+      const outDoc = await PDFDocument.create();
+      const copied = await outDoc.copyPages(srcDoc, orderedIndices);
+      copied.forEach(function (page) {
+        outDoc.addPage(page);
+      });
+
+      const outBytes = await outDoc.save();
+      const blob = new Blob([outBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const fileName = sanitizeName($("#outFileName").val(), "extracted-pages") + ".pdf";
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+
+      showToast("Extracted " + orderedIndices.length + " page(s) into " + fileName);
+    } catch (err) {
+      showToast("Error extracting PDF pages.");
+    } finally {
+      syncControls();
+      $("#extractBtn").text("Extract & Download PDF");
+    }
+  });
+});
+</script>
+</body>
+</html>
