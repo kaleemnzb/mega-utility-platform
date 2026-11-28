@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDF Metadata Viewer — Inspect PDF Properties Locally</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root{
+  --g:#86BC25;--gd:#6B9A1E;--bk:#0A0A0A;--ch:#282728;
+  --surf:#fff;--surf2:#F5F5F5;--txt:#0A0A0A;
+  --txt2:#53565A;--brd:#E6E6E6;--r:10px;
+  --sh:0 1px 4px rgba(0,0,0,.08);--ff:"Open Sans",Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--surf:#1C1C1C;--surf2:#252525;--txt:#F0F0F0;--txt2:#9E9E9E;
+        --brd:#333;--g:#86EB22;--gd:#70C01A;}
+}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+}
+input,textarea,select{
+  -webkit-user-select:text;-moz-user-select:text;user-select:text;
+}
+body{font-family:var(--ff);background:var(--surf2);color:var(--txt);min-height:100vh}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--g);outline-offset:2px;border-radius:4px;
+}
+header{background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:0 clamp(16px,4vw,48px);height:54px;display:flex;align-items:center;
+  gap:10px;box-shadow:var(--sh);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--g)}
+.ltxt{font-size:.9rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.ltxt em{font-style:normal;font-weight:300}
+.back-hub{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--txt2);
+  background:var(--surf2);border:1px solid var(--brd);padding:4px 10px;border-radius:7px}
+.back-hub:hover{color:var(--txt);border-color:var(--g)}
+.hpill{margin-left:auto;font-size:.65rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt2);padding:3px 10px;border-radius:20px}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(14px,2.5vw,24px) clamp(16px,4vw,40px)}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.chd{padding:11px 16px;border-bottom:1px solid var(--brd)}
+.chd h2{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.cbody{padding:16px}
+.note{font-size:.72rem;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--g);
+  padding:8px 12px;border-radius:0 5px 5px 0;line-height:1.55;margin-bottom:14px}
+.dz{border:2px dashed var(--brd);border-radius:var(--r);padding:18px 14px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:14px}
+.dz:hover,.dz.over{border-color:var(--g);background:rgba(134,188,37,.05)}
+.dz-title{font-size:.86rem;font-weight:700;margin-bottom:2px}
+.dz-sub{font-size:.7rem;color:var(--txt2)}
+#fileInput{display:none}
+.meta-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.meta-table th,.meta-table td{padding:9px 12px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}
+.meta-table th{width:210px;font-size:.7rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--txt2);background:var(--surf2)}
+.meta-table td{color:var(--txt);word-break:break-word}
+.empty-box{text-align:center;color:var(--txt2);font-size:.76rem;padding:24px 12px;
+  background:var(--surf2);border:1px solid var(--brd);border-radius:8px}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bp{background:var(--g);color:var(--bk);border:none;border-radius:8px;padding:10px 18px;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;cursor:pointer;min-height:42px}
+.bp:hover:not(:disabled){background:var(--gd)}
+.bp:disabled{opacity:.4;cursor:not-allowed}
+.bs{background:var(--surf);color:var(--txt2);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:var(--ff);font-size:.8rem;font-weight:700;cursor:pointer;min-height:42px}
+.bs:hover:not(:disabled){background:var(--surf2);color:var(--txt)}
+.bs:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ch);color:#fff;padding:9px 18px;border-radius:8px;font-size:.76rem;
+  font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="pdf-metadata-viewer.html" class="logo">
+    <div class="dot"></div>
+    <span class="ltxt">PDF Tools <em>| PDF Metadata Viewer</em></span>
+  </a>
+  <a href="index.html" class="back-hub">&larr; All Tools</a>
+  <span class="hpill">100% In-Browser</span>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="chd"><h2>Tool #19 — PDF Metadata Viewer (Inspect Author, Dates &amp; Properties)</h2></div>
+    <div class="cbody">
+      <p class="note">Inspect document properties, author, title, subject, keywords, creator/producer tools, creation/modification dates, page count, and page dimensions locally in your browser.</p>
+
+      <input type="file" id="fileInput" accept="application/pdf,.pdf"/>
+      <div class="dz" id="dropZone" role="button" tabindex="0">
+        <div class="dz-title">Click or drag &amp; drop a PDF file to inspect metadata</div>
+        <div class="dz-sub">PDF documents &middot; Zero server uploads</div>
+      </div>
+
+      <div id="metaContainer">
+        <div class="empty-box">No PDF loaded yet. Select or drop a PDF file above to view its metadata.</div>
+      </div>
+
+      <div class="brow">
+        <button type="button" class="bp" id="copyJsonBtn" disabled>Copy Metadata JSON</button>
+        <button type="button" class="bs" id="clearBtn" disabled>Clear File</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+$(function () {
+  $(document).on("contextmenu", function (e) { e.preventDefault(); return false; });
+  $(document).on("keydown", function (e) {
+    if (e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false;
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false;
+  });
+
+  let currentMetadata = null;
+  let toastTimer = null;
+
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    $("#toast").text(msg).addClass("show");
+    toastTimer = setTimeout(function () { $("#toast").removeClass("show"); }, 2400);
+  }
+
+  function formatSize(bytes) {
+    if (!bytes && bytes !== 0) return "—";
+    return bytes >= 1048576
+      ? (bytes / 1048576).toFixed(2) + " MB (" + bytes.toLocaleString() + " bytes)"
+      : (bytes / 1024).toFixed(1) + " KB (" + bytes.toLocaleString() + " bytes)";
+  }
+
+  function formatDateVal(d) {
+    if (!d || !(d instanceof Date) || isNaN(d.getTime())) return "—";
+    return d.toLocaleString() + " (" + d.toISOString() + ")";
+  }
+
+  function escapeHtml(str) {
+    return $("<div>").text(str == null ? "—" : String(str)).html();
+  }
+
+  function renderMetadata(meta) {
+    currentMetadata = meta;
+    const rows = [
+      ["File Name", meta.fileName],
+      ["File Size", meta.fileSizeText],
+      ["Page Count", meta.pageCount],
+      ["Page 1 Size", meta.page1SizeText],
+      ["Title", meta.title || "—"],
+      ["Author", meta.author || "—"],
+      ["Subject", meta.subject || "—"],
+      ["Keywords", meta.keywords || "—"],
+      ["Creator", meta.creator || "—"],
+      ["Producer", meta.producer || "—"],
+      ["Creation Date", meta.creationDateText],
+      ["Modification Date", meta.modificationDateText]
+    ];
+
+    let html = '<table class="meta-table"><tbody>';
+    rows.forEach(function (r) {
+      html += "<tr><th>" + escapeHtml(r[0]) + "</th><td>" + escapeHtml(r[1]) + "</td></tr>";
+    });
+    html += "</tbody></table>";
+
+    $("#metaContainer").html(html);
+    $("#copyJsonBtn, #clearBtn").prop("disabled", false);
+  }
+
+  async function inspectPdfFile(file) {
+    if (!file) return;
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+    if (!isPdf) {
+      showToast("Please select a valid PDF file.");
+      return;
+    }
+    if (!window.PDFLib || !window.PDFLib.PDFDocument) {
+      showToast("PDF library not loaded. Check CDN connection.");
+      return;
+    }
+
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const doc = await window.PDFLib.PDFDocument.load(bytes, { updateMetadata: false });
+      const pageCount = doc.getPageCount();
+
+      let page1SizeText = "—";
+      let page1DimsPt = null;
+      if (pageCount > 0) {
+        const p1 = doc.getPage(0);
+        const wPt = p1.getWidth();
+        const hPt = p1.getHeight();
+        const wMm = (wPt * 25.4) / 72;
+        const hMm = (hPt * 25.4) / 72;
+        const wIn = wPt / 72;
+        const hIn = hPt / 72;
+        page1DimsPt = { widthPt: Number(wPt.toFixed(2)), heightPt: Number(hPt.toFixed(2)) };
+        page1SizeText =
+          wPt.toFixed(1) + " × " + hPt.toFixed(1) + " pt (" +
+          wMm.toFixed(1) + " × " + hMm.toFixed(1) + " mm / " +
+          wIn.toFixed(2) + " × " + hIn.toFixed(2) + " in)";
+      }
+
+      const created = doc.getCreationDate();
+      const modified = doc.getModificationDate();
+
+      const meta = {
+        fileName: file.name || "document.pdf",
+        fileSizeBytes: file.size || bytes.byteLength,
+        fileSizeText: formatSize(file.size || bytes.byteLength),
+        pageCount: pageCount,
+        page1SizeText: page1SizeText,
+        page1DimensionsPt: page1DimsPt,
+        title: doc.getTitle() || "",
+        author: doc.getAuthor() || "",
+        subject: doc.getSubject() || "",
+        keywords: doc.getKeywords() || "",
+        creator: doc.getCreator() || "",
+        producer: doc.getProducer() || "",
+        creationDate: created ? created.toISOString() : null,
+        creationDateText: formatDateVal(created),
+        modificationDate: modified ? modified.toISOString() : null,
+        modificationDateText: formatDateVal(modified)
+      };
+
+      renderMetadata(meta);
+      showToast("Loaded metadata for '" + meta.fileName + "'");
+    } catch (err) {
+      showToast("Unable to read PDF metadata (it may be encrypted or damaged).");
+    }
+  }
+
+  $("#copyJsonBtn").on("click", function () {
+    if (!currentMetadata) return;
+    const text = JSON.stringify(currentMetadata, null, 2);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToast("Copied metadata JSON to clipboard");
+      }).catch(function () {
+        showToast("Clipboard copy blocked by browser permissions.");
+      });
+    } else {
+      showToast("Clipboard API not available in this browser.");
+    }
+  });
+
+  $("#clearBtn").on("click", function () {
+    currentMetadata = null;
+    $("#metaContainer").html('<div class="empty-box">No PDF loaded yet. Select or drop a PDF file above to view its metadata.</div>');
+    $("#copyJsonBtn, #clearBtn").prop("disabled", true);
+    showToast("Cleared PDF metadata");
+  });
+
+  $("#dropZone").on("click", function () { $("#fileInput").trigger("click"); });
+  $("#dropZone").on("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#fileInput").trigger("click"); }
+  });
+  $("#dropZone").on("dragover", function (e) { e.preventDefault(); $(this).addClass("over"); });
+  $("#dropZone").on("dragleave", function () { $(this).removeClass("over"); });
+  $("#dropZone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("over");
+    const dt = e.originalEvent.dataTransfer;
+    if (dt && dt.files && dt.files[0]) inspectPdfFile(dt.files[0]);
+  });
+  $("#fileInput").on("change", function () {
+    if (this.files && this.files[0]) {
+      inspectPdfFile(this.files[0]);
+      $(this).val("");
+    }
+  });
+});
+</script>
+</body>
+</html>
